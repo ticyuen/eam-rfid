@@ -1,0 +1,72 @@
+import axios from "axios";
+import { useAuthStore, useUIStore } from "../store";
+
+const API_BASE_URL = import.meta.env.VITE_AT_OFFICE ? import.meta.env.VITE_API_BASE_URL_OFFICE : import.meta.env.VITE_API_BASE_URL;
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 15000,
+  headers: {
+    "Content-Type": "application/json"
+  }
+});
+
+// Request interceptor
+api.interceptors.request.use((config) => {
+  const { token } = useAuthStore.getState();
+  const { startLoading } = useUIStore.getState();
+
+  if (config.showLoader !== false) startLoading()
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+// Response interceptor
+api.interceptors.response.use(
+  (response) => {
+    const { stopLoading } = useUIStore.getState();
+    stopLoading();
+    return response;
+  },
+  (error) => {
+    const { stopLoading, showSnackbar } = useUIStore.getState();
+    const { logout } = useAuthStore.getState();
+
+    stopLoading();
+
+    // Network error
+    if (!error.response) {
+      showSnackbar(
+        "Network error. Please check WiFi connection.",
+        "error"
+      );
+      return Promise.reject(error);
+    }
+
+    const status = error.response.status;
+
+    if (status === 400) {
+      showSnackbar(error.response.data?.message || "Bad request.", "warning");
+      return Promise.reject(error);
+    }
+
+    if (status === 401) {
+      showSnackbar("Session expired. Please login again.", "warning");
+      logout();
+      return Promise.reject(error);
+    }
+
+    if (status >= 500) {
+      showSnackbar("Server error. Please try again later.", "error");
+      return Promise.reject(error);
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default api;

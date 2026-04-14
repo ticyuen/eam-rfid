@@ -1,0 +1,5 @@
+export const ASSET_STATUS = {
+  MATCHED: "MATCHED",
+  MISSING: "MISSING",
+  NEW: "NEW"
+};

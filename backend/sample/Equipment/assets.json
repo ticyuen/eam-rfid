@@ -1,0 +1,66 @@
+{
+  "Result": {
+    "SessionID": null,
+    "ResultData": {
+      "DATAENTITYNAME": "AssetEquipment",
+      "CURRENTCURSORPOSITION": 50,
+      "NEXTCURSORPOSITION": 51,
+      "RECORDS": 10000,
+      "DATARECORD": [
+        {
+          "ASSETID": {
+            "EQUIPMENTCODE": "0055118-1",
+            "ORGANIZATIONID": {
+              "ORGANIZATIONCODE": "MGT",
+              "DESCRIPTION": null,
+              "entity": null
+            },
+            "DESCRIPTION": "0055118"
+          },
+          "TYPE": {
+            "TYPECODE": "A",
+            "DESCRIPTION": null,
+            "entity": null
+          },
+          "CLASSID": null,
+          "STATUS": {
+            "STATUSCODE": "D",
+            "DESCRIPTION": null,
+            "entity": null
+          },
+          "DEPARTMENTID": {
+            "DEPARTMENTCODE": "BESS",
+            "ORGANIZATIONID": null,
+            "DESCRIPTION": null
+          },
+          "OPERATIONALSTATUS": null,
+          "LOANEDTODEPARTMENTID": null,
+          "PMWODEPARTMENTID": null,
+          "CATEGORYID": null,
+          "OUTOFSERVICE": "false",
+          "COMMISSIONDATE": {
+            "YEAR": 1767225600000,
+            "MONTH": 3,
+            "DAY": 22,
+            "HOUR": 0,
+            "MINUTE": 0,
+            "SECOND": 0,
+            "SUBSECOND": 0,
+            "TIMEZONE": "+0000",
+            "qualifier": "OTHER"
+          },
+          "PartAssociation": null,
+          "ManufacturerInfo": null,
+          "EQUIPMENTSTATEID": null,
+          "USERDEFINEDAREA": null,
+          "EQUIPMENTALIAS": null,
+          "haswo": "false"
+        }
+      ]
+    },
+    "InfoAlert": null,
+    "WarningAlert": null
+  },
+  "ConfirmationAlert": null,
+  "ErrorAlert": []
+}
