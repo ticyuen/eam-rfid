@@ -16,8 +16,8 @@ export const mapWorkOrders = (data) => {
 
 export const fetchWorkOrders = async () => {
   const res = await api.post("/work-order", {
-    fromDate: "10-APR-2026",
-    toDate: "30-MAY-2026"
+    // fromDate: "10-APR-2026",
+    // toDate: "30-MAY-2026"
   });
 
   return res.data?.data || [];

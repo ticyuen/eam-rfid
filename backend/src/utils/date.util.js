@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { ENV } from "../config/env";
+import { ENV } from "../config/env.js";
 
 export function isExpired(dateStr) {
   if (!dateStr) return true;
