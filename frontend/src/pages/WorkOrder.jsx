@@ -14,7 +14,7 @@ import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 
 import { useNavigate } from "react-router-dom";
 import { useWorkOrderStore } from "../store";
-import { formatScheduleDate } from "../utils/dateFormatter";
+import { formatLocalDateTime } from "../utils/dateFormatter";
 import { WorkOrderStatus } from "../constants";
 
 const WorkOrder = () => {
@@ -104,7 +104,7 @@ const WorkOrder = () => {
       <Stack spacing={2}>
         {workOrders.map((wo) => {
           const { firstScanDone, secondScanDone } = getScanStatus(wo.status);
-          const formatted = formatScheduleDate(wo.scheduledStartDate);
+          const formatted = formatLocalDateTime(wo.startDate);
 
           return (
             <Card
@@ -143,7 +143,7 @@ const WorkOrder = () => {
                 {/* DATE */}
                 <Typography variant="body2" sx={{ mt: 3 }}>
                   <strong>Start Date: </strong>
-                  {formatted.datePart} • {formatted.timePart}
+                  {formatted.date} • {formatted.time}
                 </Typography>
 
                 {/* PM */}

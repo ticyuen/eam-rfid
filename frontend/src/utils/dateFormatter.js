@@ -1,14 +1,16 @@
-export function formatScheduleDate(dateString) {
-  if (!dateString) return "-";
+export function formatLocalDateTime(isoString) {
+  const dt = new Date(isoString);
 
-  const date = new Date(dateString);
+  const yyyy = dt.getFullYear();
+  const mm = String(dt.getMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getDate()).padStart(2, "0");
 
-  const datePart = date.toISOString().slice(0, 10); // YYYY-MM-DD
-  const timePart = date.toTimeString().slice(0, 8); // HH:MM:SS
+  const hh = String(dt.getHours()).padStart(2, "0");
+  const min = String(dt.getMinutes()).padStart(2, "0");
+  const ss = String(dt.getSeconds()).padStart(2, "0");
 
-//   return `${datePart}\n${timePart}`;
   return {
-    datePart,
-    timePart
-  }
+    date: `${yyyy}-${mm}-${dd}`,
+    time: `${hh}:${min}:${ss}`
+  };
 }

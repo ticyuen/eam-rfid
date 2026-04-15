@@ -4,15 +4,11 @@ import { useAuthStore } from "./authStore";
 import { fetchWorkOrders as fetchWOApi, mapWorkOrders } from "../api/workOrder";
 import { WorkOrderStatus } from "../constants";
 
-// Refresh logic
-// set({ isLoaded: false });
-// fetchWorkOrders();
-
 const useWorkOrderStore = create(
   persist(
     (set, get) => ({
       workOrders: [],
-      isLoaded: false, // ✅ prevent duplicate calls
+      isLoaded: false, // prevent duplicate calls
 
       setWorkOrders: (orders) =>
         set({

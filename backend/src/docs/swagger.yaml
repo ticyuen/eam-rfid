@@ -40,32 +40,37 @@ paths:
     post:
       tags:
         - Work Order
-      summary: Get work orders by date range
-      description: Fetch work orders from Hexagon EAM grid based on date range and status
+      summary: Get Work Orders
+      description: Retrieve work orders with optional filters (status, org, location, date range, work order code)
       security:
         - bearerAuth: []
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
               type: object
-              required:
-                - fromDate
-                - toDate
               properties:
-                status:
+                workOrderCode:
                   type: string
-                  example: "R"
+                  example: "30085"
+                org:
+                  type: string
+                  example: "TSUSHO1"
+                location:
+                  type: string
+                  example: "S686"
                 fromDate:
                   type: string
-                  example: "04-MAR-2026"
+                  description: Start date
+                  example: "10-APR-2026"
                 toDate:
                   type: string
-                  example: "15-MAR-2026"
+                  description: End date
+                  example: "31-MAY-2026"
       responses:
         "200":
-          description: Successfully retrieved work orders
+          description: Successful response
           content:
             application/json:
               schema:
@@ -75,10 +80,37 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: object
-                    example: {}
-        "400":
-          description: Bad request (missing parameters)
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        workOrderCode:
+                          type: string
+                          example: "30085"
+                        description:
+                          type: string
+                          example: "Asset Check 1"
+                        location:
+                          type: string
+                          example: "S686"
+                        organization:
+                          type: string
+                          example: "TSUSHO1"
+                        objectOrganization:
+                          type: string
+                          example: "TSUSHO"
+                        pmCode:
+                          type: string
+                          example: "ASSET_CHECK_01"
+                        status:
+                          type: string
+                          example: "OPEN"
+                        startDate:
+                          type: string
+                          example: "01-MAY-2026 00:00"
+                        endDate:
+                          type: string
+                          example: "01-MAY-2026 00:00"
         "401":
           description: Unauthorized
         "500":
@@ -98,7 +130,7 @@ paths:
           required: true
           schema:
             type: string
-          example: BD09001/SR
+          example: FF25003/HQ
 
         - name: orgCode
           in: query

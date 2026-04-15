@@ -6,7 +6,7 @@ export const dummyWorkOrders = [
     PM: "YNY-IC 001",
     status: "Released",
     lastUpdate: "2026-01-01T16:00:00",
-    scheduledStartDate: "2026-01-05T09:00:00",
+    startDate: "2026-01-05T09:00:00",
   },
   {
     id: 52602,
@@ -15,7 +15,7 @@ export const dummyWorkOrders = [
     PM: "YNY-IC 002",
     status: "Released",
     lastUpdate: "2026-01-10T11:30:00",
-    scheduledStartDate: "2026-01-12T10:00:00",
+    startDate: "2026-01-12T10:00:00",
   },
   {
     id: 52603,
@@ -24,7 +24,7 @@ export const dummyWorkOrders = [
     PM: "YNY-IC 003",
     status: "Released",
     lastUpdate: "2026-02-01T14:00:00",
-    scheduledStartDate: "2026-02-05T09:00:00",
+    startDate: "2026-02-05T09:00:00",
   },
   {
     id: 52604,
@@ -33,7 +33,7 @@ export const dummyWorkOrders = [
     PM: "YNY-IC 004",
     status: "Job Done",
     lastUpdate: "2026-02-20T16:45:00",
-    scheduledStartDate: "2026-02-18T13:00:00",
+    startDate: "2026-02-18T13:00:00",
   },
   {
     id: 52605,
@@ -42,6 +42,6 @@ export const dummyWorkOrders = [
     PM: "YNY-IC 005",
     status: "Released",
     lastUpdate: "2026-03-01T10:15:00",
-    scheduledStartDate: "2026-03-05T15:30:00",
+    startDate: "2026-03-05T15:30:00",
   },
 ];

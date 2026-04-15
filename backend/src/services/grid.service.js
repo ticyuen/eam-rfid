@@ -1,5 +1,4 @@
 import { eamClient } from "../lib/axios.js";
-import { demoClient } from "../lib/demoClient.js";
 import { eamRequest } from "../lib/eamRequest.js";
 import { safeRequest } from "../utils/httpClient.js";
 
@@ -74,9 +73,10 @@ export async function executeGrid({
     rowLimit,
     cursorPosition
   });
+  console.log("Grid Payload: ", payload)
 
   const res = await safeRequest(
-    demoClient.post("/grids", payload, eamRequest(context))
+    eamClient.post("/grids", payload, eamRequest(context))
   );
 
   return res.data;
@@ -94,34 +94,4 @@ export function mapGridRecords(rawData) {
       return acc;
     }, {})
   );
-}
-
-export async function getWorkOrdersService(params, context) {
-  const { status = "R", fromDate, toDate } = params;
-
-  const filters = [
-    createFilter({ alias: "EVT_STATUS", value: status }),
-    createFilter({ alias: "EVT_TARGET", operator: ">=", value: fromDate }),
-    createFilter({ alias: "EVT_TARGET", operator: "<=", value: toDate })
-  ];
-
-  const raw = await executeGrid({
-    gridId: "100737",
-    gridName: "0U5001",
-    userFunctionName: "0U5001",
-    filters
-  }, context);
-
-  const mapped = mapGridRecords(raw);
-
-  return mapped.map(fields => ({
-    id: fields.evt_code,
-    description: fields.evt_desc,
-    location: fields.evt_udfchar05,
-    asset: [],
-    PM: fields.evt_ppm,
-    status: fields.evt_udfchar04,
-    scheduledStart: fields.evt_target,
-    organization: fields.evt_org
-  }));
 }
