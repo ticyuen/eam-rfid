@@ -1,6 +1,10 @@
 import { executeGrid, createFilter, mapGridRecords } from "./grid.service.js";
 import { HXGN_STATUS } from "../constants/hxgnStatus.js"
 import { parseHxgnDateTime } from "../utils/date.util.js";
+import { eamClient } from "../lib/axios.js";
+import { eamRequest } from "../lib/eamRequest.js";
+import { safeRequest } from "../utils/httpClient.js";
+import { v4 as uuidv4 } from "uuid";
 
 function transformWorkOrders(records) {
   const grouped = {};
@@ -91,4 +95,73 @@ export async function getWorkOrdersService(filtersInput, context) {
   const mapped = mapGridRecords(raw);
 
   return transformWorkOrders(mapped);
+}
+
+export async function addWorkOrderScanService(payload, context) {
+  const {
+    workOrderId,
+    status,
+    deviceName,
+    deviceIp,
+    remark
+  } = payload;
+
+  const requestBody = {
+    USERDEFINEDSCREENNAME: "UUWOSC",
+    USERDEFINEDSERVICEACTION: "ADD",
+    USERDEFINEDSCREENFIELDVALUELIST: {
+      USERDEFINEDSCREENFIELDVALUEPAIR: [
+        {
+          USERDEFINEDSCREENFIELDNAME: "UUID",
+          USERDEFINEDSCREENFIELDVALUE: {
+            TEXTDATA: uuidv4().toUpperCase()
+          }
+        },
+        {
+          USERDEFINEDSCREENFIELDNAME: "WORKORDERID",
+          USERDEFINEDSCREENFIELDVALUE: {
+            TEXTDATA: String(workOrderId)
+          }
+        },
+        {
+          USERDEFINEDSCREENFIELDNAME: "WORKORDERSCANSTATUS",
+          USERDEFINEDSCREENFIELDVALUE: {
+            TEXTDATA: status
+          }
+        },
+        {
+          USERDEFINEDSCREENFIELDNAME: "DEVICENAME",
+          USERDEFINEDSCREENFIELDVALUE: {
+            TEXTDATA: deviceName || ""
+          }
+        },
+        {
+          USERDEFINEDSCREENFIELDNAME: "DEVICEIP",
+          USERDEFINEDSCREENFIELDVALUE: {
+            TEXTDATA: deviceIp || ""
+          }
+        },
+        {
+          USERDEFINEDSCREENFIELDNAME: "REMARK",
+          USERDEFINEDSCREENFIELDVALUE: {
+            TEXTDATA: remark || ""
+          }
+        }
+      ]
+    }
+  };
+
+  const res = await safeRequest(
+    eamClient.post(
+      "/userdefinedscreenservices",
+      requestBody,
+      eamRequest(context)
+    )
+  );
+
+  return {
+    success: true,
+    message: res.data?.Result?.InfoAlert?.Message || "Scan saved",
+    record: res.data?.Result?.ResultData?.UserDefinedScreenService
+  };
 }
