@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useAuthStore, useUIStore } from "../store";
 
-const API_BASE_URL = import.meta.env.VITE_AT_OFFICE ? import.meta.env.VITE_API_BASE_URL_OFFICE : import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = String(import.meta.env.VITE_AT_OFFICE).toUpperCase() === "TRUE" ? import.meta.env.VITE_API_BASE_URL_OFFICE : import.meta.env.VITE_API_BASE_URL;
+console.log("API_BASE_URL: ", API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
