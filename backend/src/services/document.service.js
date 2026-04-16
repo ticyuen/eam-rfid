@@ -7,12 +7,12 @@ function extractBase64(data) {
 }
 
 export async function getDocumentService({ documentCode }, context) {
-  // IMPORTANT: #* must be encoded → %23%2A
-  const encoded = `${documentCode}%23%2A`;
+  const raw = `${documentCode}#*`;
+  const encodedId = encodeURIComponent(encodeURIComponent(raw));
 
   const res = await safeRequest(
     eamClient.get(
-      `/documents/${encoded}`,
+      `/documents/${encodedId}`,
       eamRequest(context)
     )
   );
