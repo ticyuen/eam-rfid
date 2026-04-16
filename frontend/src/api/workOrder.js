@@ -22,3 +22,21 @@ export const fetchWorkOrders = async () => {
 
   return res.data?.data || [];
 };
+
+export const createWorkOrderScan = async ({
+  workOrderId,
+  status,
+  deviceName,
+  deviceIp,
+  remark = ""
+}) => {
+  const res = await api.post("/work-order/scan", {
+    workOrderId: String(workOrderId),
+    status,
+    deviceName,
+    deviceIp,
+    remark
+  });
+
+  return res.data;
+};

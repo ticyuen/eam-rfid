@@ -16,16 +16,39 @@ import { useNavigate } from "react-router-dom";
 import { useWorkOrderStore } from "../store";
 import { formatLocalDateTime } from "../utils/dateFormatter";
 import { WorkOrderStatus } from "../constants";
+import { createWorkOrderScan } from "../api/workOrder";
+import { useState } from "react";
+import { getDeviceName } from "../utils/device";
 
 const WorkOrder = () => {
   const navigate = useNavigate();
   const { workOrders, updateStatus } = useWorkOrderStore();
 
-  const handleAction = (wo) => {
+  const [loadingId, setLoadingId] = useState(null);
+
+  const handleAction = async (wo) => {
     switch (wo.status) {
       case WorkOrderStatus.RELEASED:
-        updateStatus(wo.id, WorkOrderStatus.FIRST_SCAN_IN_PROGRESS);
-        navigate(`/inventory/perform/${wo.id}`);
+        try {
+          setLoadingId(wo.id);
+
+          const deviceName = getDeviceName();
+          await createWorkOrderScan({
+            workOrderId: wo.id,
+            status: WorkOrderStatus.FIRST_SCAN_IN_PROGRESS,
+            deviceName,
+            deviceIp: null,
+            remark: ""
+          });
+
+          updateStatus(wo.id, WorkOrderStatus.FIRST_SCAN_IN_PROGRESS);
+          navigate(`/inventory/perform/${wo.id}`);
+
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoadingId(null);
+        }
         break;
 
       case WorkOrderStatus.FIRST_SCAN_IN_PROGRESS:
@@ -183,8 +206,10 @@ const WorkOrder = () => {
                     variant="contained"
                     sx={{ mt: 2 }}
                     onClick={() => handleAction(wo)}
+                    disabled={loadingId === wo.id}
                   >
-                    {getActionText(wo.status)}
+                    {/* {getActionText(wo.status)} */}
+                    {getActionText(wo.status)}{loadingId === wo.id ? "..." : ""}
                   </Button>
                 )}
 
