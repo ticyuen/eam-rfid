@@ -102,8 +102,10 @@ export default function AssetDetailsModal({ open, onClose, asset }) {
           </AccordionSummary>
 
           <AccordionDetails>
+            <Info label="Organization" value={asset.organization} />
+            <Info label="Location" value={asset.location} />
+            <Info label="Zone" value={asset.zone} />
             <Info label="Department" value={asset.department} />
-            <Info label="Location" value={asset.parentDesc} />
             <Info label="Commission Date" value={asset.commissionDate} />
           </AccordionDetails>
         </Accordion>

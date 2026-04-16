@@ -13,7 +13,7 @@ export const assetDetails = [
     serialNumber: "SUM-C-001",
     image: "../assets/chair.png",
     status: "",
-    location: "Summer Meeting Room",
+    zone: "Summer Meeting Room",
   },
   {
     assetCode: "E280699500004006D0A2E25B",
@@ -28,7 +28,7 @@ export const assetDetails = [
     serialNumber: "SUM-C-002",
     image: "../assets/chair.png",
     status: "",
-    location: "Summer Meeting Room",
+    zone: "Summer Meeting Room",
   },
   {
     assetCode: "E280117000000211BF6AFA59",
@@ -43,7 +43,7 @@ export const assetDetails = [
     serialNumber: "SUM-C-003",
     image: "../assets/chair.png",
     status: "",
-    location: "Summer Meeting Room",
+    zone: "Summer Meeting Room",
   },
   {
     assetCode: "E280699500004006D0A2DE5A",
@@ -58,7 +58,7 @@ export const assetDetails = [
     serialNumber: "SUM-C-004",
     image: "../assets/chair.png",
     status: "",
-    location: "Summer Meeting Room",
+    zone: "Summer Meeting Room",
   },
   {
     assetCode: "3014F41460000040000022F0",
@@ -73,7 +73,7 @@ export const assetDetails = [
     serialNumber: "SUM-C-005",
     image: "../assets/chair.png",
     status: "",
-    location: "Summer Meeting Room",
+    zone: "Summer Meeting Room",
   },
   {
     assetCode: "3014F4146000004000000BCA",
@@ -88,7 +88,7 @@ export const assetDetails = [
     serialNumber: "SUM-T-001",
     image: "../assets/table.png",
     status: "",
-    location: "Summer Meeting Room",
+    zone: "Summer Meeting Room",
   },
   {
     assetCode: "3014F4146000004000003DA0",
@@ -103,7 +103,7 @@ export const assetDetails = [
     serialNumber: "SUM-TV-001",
     image: "../assets/tv.png",
     status: "",
-    location: "Summer Meeting Room",
+    zone: "Summer Meeting Room",
   },
   {
     assetCode: "3014F41460000040000022F9",
@@ -118,7 +118,7 @@ export const assetDetails = [
     serialNumber: "SUM-SB-001",
     image: "../assets/speaker.png",
     status: "",
-    location: "Summer Meeting Room",
+    zone: "Summer Meeting Room",
   },
 
   // Winter Meeting Room
@@ -135,7 +135,7 @@ export const assetDetails = [
     serialNumber: "WIN-C-001",
     image: "../assets/chair.png",
     status: "",
-    location: "Winter Meeting Room",
+    zone: "Winter Meeting Room",
   },
   {
     assetCode: "WIN-002",
@@ -150,7 +150,7 @@ export const assetDetails = [
     serialNumber: "WIN-C-002",
     image: "../assets/chair.png",
     status: "",
-    location: "Winter Meeting Room",
+    zone: "Winter Meeting Room",
   },
   {
     assetCode: "WIN-003",
@@ -165,7 +165,7 @@ export const assetDetails = [
     serialNumber: "WIN-C-003",
     image: "../assets/chair.png",
     status: "",
-    location: "Winter Meeting Room",
+    zone: "Winter Meeting Room",
   },
   {
     assetCode: "WIN-004",
@@ -180,7 +180,7 @@ export const assetDetails = [
     serialNumber: "WIN-C-004",
     image: "../assets/chair.png",
     status: "",
-    location: "Winter Meeting Room",
+    zone: "Winter Meeting Room",
   },
   {
     assetCode: "WIN-005",
@@ -195,7 +195,7 @@ export const assetDetails = [
     serialNumber: "WIN-C-005",
     image: "../assets/chair.png",
     status: "",
-    location: "Winter Meeting Room",
+    zone: "Winter Meeting Room",
   },
   {
     assetCode: "WIN-006",
@@ -210,7 +210,7 @@ export const assetDetails = [
     serialNumber: "WIN-C-006",
     image: "../assets/chair.png",
     status: "",
-    location: "Winter Meeting Room",
+    zone: "Winter Meeting Room",
   },
   {
     assetCode: "WIN-007",
@@ -225,7 +225,7 @@ export const assetDetails = [
     serialNumber: "WIN-T-001",
     image: "../assets/table.png",
     status: "",
-    location: "Winter Meeting Room",
+    zone: "Winter Meeting Room",
   },
   {
     assetCode: "WIN-008",
@@ -240,7 +240,7 @@ export const assetDetails = [
     serialNumber: "WIN-TV-001",
     image: "../assets/tv.png",
     status: "",
-    location: "Winter Meeting Room",
+    zone: "Winter Meeting Room",
   },
   {
     assetCode: "WIN-009",
@@ -255,7 +255,7 @@ export const assetDetails = [
     serialNumber: "WIN-SB-001",
     image: "../assets/speaker.png",
     status: "",
-    location: "Winter Meeting Room",
+    zone: "Winter Meeting Room",
   },
 
   // Autumn Meeting Room
@@ -272,7 +272,7 @@ export const assetDetails = [
     serialNumber: "AUT-C-001",
     image: "../assets/chair.png",
     status: "",
-    location: "Autumn Meeting Room",
+    zone: "Autumn Meeting Room",
   },
   {
     assetCode: "AUT-002",
@@ -287,7 +287,7 @@ export const assetDetails = [
     serialNumber: "AUT-C-002",
     image: "../assets/chair.png",
     status: "",
-    location: "Autumn Meeting Room",
+    zone: "Autumn Meeting Room",
   },
   {
     assetCode: "AUT-003",
@@ -302,7 +302,7 @@ export const assetDetails = [
     serialNumber: "AUT-C-003",
     image: "../assets/chair.png",
     status: "",
-    location: "Autumn Meeting Room",
+    zone: "Autumn Meeting Room",
   },
   {
     assetCode: "AUT-004",
@@ -317,7 +317,7 @@ export const assetDetails = [
     serialNumber: "AUT-T-001",
     image: "../assets/table.png",
     status: "",
-    location: "Autumn Meeting Room",
+    zone: "Autumn Meeting Room",
   },
   {
     assetCode: "AUT-005",
@@ -332,7 +332,7 @@ export const assetDetails = [
     serialNumber: "AUT-TV-001",
     image: "../assets/tv.png",
     status: "",
-    location: "Autumn Meeting Room",
+    zone: "Autumn Meeting Room",
   },
   {
     assetCode: "AUT-006",
@@ -347,7 +347,7 @@ export const assetDetails = [
     serialNumber: "AUT-SB-001",
     image: "../assets/speaker.png",
     status: "",
-    location: "Autumn Meeting Room",
+    zone: "Autumn Meeting Room",
   },
 
   // Spring Meeting Room
@@ -364,7 +364,7 @@ export const assetDetails = [
     serialNumber: "SPR-C-001",
     image: "../assets/chair.png",
     status: "",
-    location: "Spring Meeting Room",
+    zone: "Spring Meeting Room",
   },
   {
     assetCode: "SPR-002",
@@ -379,7 +379,7 @@ export const assetDetails = [
     serialNumber: "SPR-C-002",
     image: "../assets/chair.png",
     status: "",
-    location: "Spring Meeting Room",
+    zone: "Spring Meeting Room",
   },
   {
     assetCode: "SPR-003",
@@ -394,6 +394,6 @@ export const assetDetails = [
     serialNumber: "SPR-T-001",
     image: "../assets/table.png",
     status: "",
-    location: "Spring Meeting Room",
+    zone: "Spring Meeting Room",
   },
 ];

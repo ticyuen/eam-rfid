@@ -32,18 +32,18 @@ export default function AssetManagement() {
   }, []);
 
   const descriptionOptions = [...new Set(tableData.map((a) => a.assetDesc))];
-  const locationOptions = [...new Set(tableData.map((a) => a.location))];
+  const locationOptions = [...new Set(tableData.map((a) => a.zone))];
 
   const columns = useMemo(() => [
     { field: "assetCode", headerName: "Asset Code" },
     { field: "assetDesc", headerName: "Description" },
-    // { field: "location", headerName: "Location" },
+    // { field: "zone", headerName: "zone" },
   ], []);
 
   const filteredData = tableData.filter((asset) => {
     return (
       (descFilter === "All" || asset.assetDesc === descFilter) &&
-      (locationFilter === "All" || asset.location === locationFilter)
+      (locationFilter === "All" || asset.zone === locationFilter)
     );
   });
 
@@ -81,10 +81,10 @@ export default function AssetManagement() {
         </FormControl>
 
         <FormControl size="small" sx={{ width: "100%", mt: 1 }}>
-          <InputLabel>Location</InputLabel>
+          <InputLabel>zone</InputLabel>
           <Select
             value={locationFilter}
-            label="Location"
+            label="zone"
             onChange={(e) => setLocationFilter(e.target.value)}
           >
             <MenuItem value="All">All</MenuItem>

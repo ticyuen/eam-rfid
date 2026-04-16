@@ -58,15 +58,15 @@ export const getAssetDetails = asyncHandler(async (req, res) => {
   );
 });
 
-export const getAssetsByLocation = asyncHandler(async (req, res) => {
-  const { location } = req.params;
+export const getAssetsByZone = asyncHandler(async (req, res) => {
+  const { zone } = req.params;
 
-  if (!location) {
-    throw new ApiError(400, "location is required");
+  if (!zone) {
+    throw new ApiError(400, "zone is required");
   }
 
   const data = await searchAssetsService(
-    { primarySystem: location },
+    { primarySystem: zone },
     req.context
   );
 

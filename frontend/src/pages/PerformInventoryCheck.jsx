@@ -7,10 +7,10 @@ import SearchIcon from "@mui/icons-material/Search";
 import AssetDetailsModal from "../components/AssetDetailsModal";
 import RfidScanModal from "../components/RfidScanModal";
 
-import { assetDetails } from "../mock/assetDetails";
 import { processRFIDScan } from "../services/rfidProcessor";
 import { ASSET_STATUS, WorkOrderStatus } from "../constants";
 import { useWorkOrderStore } from "../store";
+import { fetchAssetsByZone, mapAssets } from "../api/asset";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
@@ -26,7 +26,7 @@ const PerformInventoryCheck = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { workOrders, updateStatus, completeLocationScan } = useWorkOrderStore();
+  const { workOrders, updateStatus, completeZoneScan } = useWorkOrderStore();
 
   const workOrder = workOrders.find((wo) => wo.id.toString() === id);
 
@@ -39,12 +39,12 @@ const PerformInventoryCheck = () => {
   const [openAssetModal, setOpenAssetModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
 
-  const [selectedLocation, setSelectedLocation] = useState(
-    workOrder?.location?.[0] || ""
+  const [selectedZone, setSelectedZone] = useState(
+    workOrder?.zone?.[0] || ""
   );
 
   const scanType = getScanType(workOrder?.status);
-  const allLocations = workOrder?.location || [];
+  const allZones = workOrder?.zone || [];
 
   const visibleAssets = useMemo(() => {
     let data = tableData;
@@ -54,7 +54,7 @@ const PerformInventoryCheck = () => {
       data = data.filter(a => a.status === statusFilter);
     }
 
-    // 🔥 Priority sorting
+    // Priority sorting
     const priority = {
       [ASSET_STATUS.NEW]: 0,
       [ASSET_STATUS.MISSING]: 1,
@@ -68,23 +68,37 @@ const PerformInventoryCheck = () => {
   }, [tableData, statusFilter]);
 
   /**
-   * Load assets per location
+   * Load assets per zone
    */
   useEffect(() => {
-    if (!selectedLocation || !workOrder) return;
+    console.log('WO: ', workOrder)
+    console.log(`zone: ${selectedZone}`)
+    const loadAssets = async () => {
+      if (!selectedZone || !workOrder) return;
 
-    const data =
-      workOrder.locationResults?.[selectedLocation]?.[scanType]?.assets ||
-      assetDetails
-        .filter((x) => x.location === selectedLocation)
-        .map((a) => ({
-          ...a,
-          id: `${a.assetCode}-${selectedLocation}`,
-          status: ASSET_STATUS.MISSING,
-        }));
+      // If already scanned before → use saved data
+      const existing = workOrder.zoneResults?.[selectedZone]?.[scanType]?.assets;
+      console.log(`${selectedZone} Assets data exist: ${existing}`)
 
-    setTableData(data);
-  }, [selectedLocation, workOrder]);
+      if (existing) {
+        setTableData(existing);
+        return;
+      }
+
+      try {
+        const raw = await fetchAssetsByZone(selectedZone);
+
+        const mapped = mapAssets(raw, selectedZone);
+
+        setTableData(mapped);
+
+      } catch (err) {
+        console.error("Failed to fetch assets:", err);
+      }
+    };
+
+    loadAssets();
+  }, [selectedZone, workOrder]);
 
   /**
    * COUNTERS
@@ -113,7 +127,7 @@ const PerformInventoryCheck = () => {
     const updated = processRFIDScan(
       tableData,
       codes,
-      selectedLocation
+      selectedZone
     );
 
     setTableData(updated);
@@ -128,19 +142,19 @@ const PerformInventoryCheck = () => {
 
     if (!currentWO) return;
 
-    completeLocationScan(
+    completeZoneScan(
       currentWO.id,
-      selectedLocation,
+      selectedZone,
       scanType,
       tableData
     );
 
     const updated = {
       ...currentWO,
-      locationResults: {
-        ...currentWO.locationResults,
-        [selectedLocation]: {
-          ...currentWO.locationResults?.[selectedLocation],
+      zoneResults: {
+        ...currentWO.zoneResults,
+        [selectedZone]: {
+          ...currentWO.zoneResults?.[selectedZone],
           [scanType]: {
             completed: true,
             assets: tableData,
@@ -149,8 +163,8 @@ const PerformInventoryCheck = () => {
       },
     };
 
-    const next = currentWO.location.find(
-      (loc) => !updated.locationResults?.[loc]?.[scanType]?.completed
+    const next = currentWO.zone.find(
+      (loc) => !updated.zoneResults?.[loc]?.[scanType]?.completed
     );
 
     if (!next) {
@@ -165,7 +179,7 @@ const PerformInventoryCheck = () => {
       return;
     }
 
-    setSelectedLocation(next);
+    setSelectedZone(next);
   };
 
   const getCardColor = (status) => {
@@ -227,19 +241,19 @@ const PerformInventoryCheck = () => {
       </Typography>
 
       <Typography variant="body2" sx={{ mb: 1 }}>
-        <strong>Location: </strong> {selectedLocation}
+        <strong>zone: </strong> {selectedZone}
       </Typography>
 
       <FormControl fullWidth size="small" sx={{ mt: 2, mb: 2 }}>
-        <InputLabel>Location</InputLabel>
+        <InputLabel>zone</InputLabel>
         <Select
-          value={selectedLocation}
-          label="Location"
-          onChange={(e) => setSelectedLocation(e.target.value)}
+          value={selectedZone}
+          label="zone"
+          onChange={(e) => setSelectedZone(e.target.value)}
         >
-          {allLocations.map((loc) => (
-            <MenuItem key={loc} value={loc}>
-              {loc}
+          {allZones.map((zone) => (
+            <MenuItem key={zone} value={zone}>
+              {zone}
             </MenuItem>
           ))}
         </Select>
@@ -434,8 +448,7 @@ const PerformInventoryCheck = () => {
                   setOpenAssetModal(true);
                 }}
                 sx={{
-                  backgroundColor: "#f5f5f5",
-                  "&:hover": { backgroundColor: "#e0e0e0" }
+                  backgroundColor: "transparent"
                 }}
               >
                 <SearchIcon />

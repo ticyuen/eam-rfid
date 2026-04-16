@@ -33,20 +33,20 @@ const InventorySummary = () => {
   const [statusFilter, setStatusFilter] = useState(null);
 
   // ================================
-  // FLATTEN ALL LOCATION RESULTS
+  // FLATTEN ALL ZONE RESULTS
   // ================================
   const allAssets = useMemo(() => {
-    if (!workOrder?.locationResults) return [];
+    if (!workOrder?.zoneResults) return [];
 
     const result = [];
 
-    Object.entries(workOrder.locationResults).forEach(
-      ([location, scans]) => {
+    Object.entries(workOrder.zoneResults).forEach(
+      ([zone, scans]) => {
         Object.values(scans).forEach((scan) => {
           (scan.assets || []).forEach((asset) => {
             result.push({
               ...asset,
-              location,
+              zone,
             });
           });
         });
@@ -257,7 +257,7 @@ const InventorySummary = () => {
                     variant="caption"
                     color="text.secondary"
                   >
-                    {asset.assetCode} • {asset.location}
+                    {asset.assetCode} • {asset.zone}
                   </Typography>
 
                   <Chip

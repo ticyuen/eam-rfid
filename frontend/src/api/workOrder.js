@@ -4,7 +4,7 @@ export const mapWorkOrders = (data) => {
   return data.map((wo) => ({
     id: wo.id,
     description: wo.description,
-    location: wo.location,
+    zone: wo.zone,
     PM: wo.pm || "",
     startDate: wo.startDate,
     endDate: wo.endDate,

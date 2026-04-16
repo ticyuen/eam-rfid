@@ -16,7 +16,7 @@ function transformWorkOrders(records) {
       grouped[id] = {
         id,
         description: fields.wo_desc,
-        location: [],
+        zone: [],
         pm: fields.wo_pm_code,
         startDate: parseHxgnDateTime(fields.wo_start_date),
         endDate: parseHxgnDateTime(fields.wo_end_date),
@@ -27,8 +27,8 @@ function transformWorkOrders(records) {
     }
 
     // Push zone_id into location array (avoid duplicates)
-    if (fields.wo_zone_id && !grouped[id].location.includes(fields.wo_zone_id)) {
-      grouped[id].location.push(fields.wo_zone_id);
+    if (fields.wo_zone_id && !grouped[id].zone.includes(fields.wo_zone_id)) {
+      grouped[id].zone.push(fields.wo_zone_id);
     }
   }
 

@@ -48,19 +48,19 @@ const useWorkOrderStore = create(
           ),
         })),
 
-      completeLocationScan: (workOrderId, location, scanType, assets) =>
+      completeZoneScan: (workOrderId, zone, scanType, assets) =>
         set((state) => ({
           workOrders: state.workOrders.map((wo) => {
             if (wo.id !== workOrderId) return wo;
 
-            const prevLocation = wo.locationResults?.[location] || {};
+            const prevZone = wo.zoneResults?.[zone] || {};
 
             return {
               ...wo,
-              locationResults: {
-                ...(wo.locationResults || {}),
-                [location]: {
-                  ...prevLocation,
+              zoneResults: {
+                ...(wo.zoneResults || {}),
+                [zone]: {
+                  ...prevZone,
                   [scanType]: {
                     completed: true,
                     assets, // STORE REAL SCANNED DATA HERE

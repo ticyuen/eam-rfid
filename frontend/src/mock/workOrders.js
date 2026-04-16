@@ -1,7 +1,7 @@
 export const dummyWorkOrders = [
   {
     id: 52601,
-    location: ["Summer Meeting Room", "Autumn Meeting Room"],
+    zone: ["Summer Meeting Room", "Autumn Meeting Room"],
     asset: ["SUM-006", "SUM-007", "AUT-005", "AUT-006"],
     PM: "YNY-IC 001",
     status: "Released",
@@ -10,7 +10,7 @@ export const dummyWorkOrders = [
   },
   {
     id: 52602,
-    location: ["Winter Meeting Room"],
+    zone: ["Winter Meeting Room"],
     asset: ["WIN-007", "WIN-008", "WIN-009"],
     PM: "YNY-IC 002",
     status: "Released",
@@ -19,7 +19,7 @@ export const dummyWorkOrders = [
   },
   {
     id: 52603,
-    location: ["Spring Meeting Room", "Summer Meeting Room"],
+    zone: ["Spring Meeting Room", "Summer Meeting Room"],
     asset: ["SPR-003", "SUM-006", "SUM-008"],
     PM: "YNY-IC 003",
     status: "Released",
@@ -28,7 +28,7 @@ export const dummyWorkOrders = [
   },
   {
     id: 52604,
-    location: ["Autumn Meeting Room"],
+    zone: ["Autumn Meeting Room"],
     asset: ["AUT-004", "AUT-003", "AUT-006"],
     PM: "YNY-IC 004",
     status: "Job Done",
@@ -37,7 +37,7 @@ export const dummyWorkOrders = [
   },
   {
     id: 52605,
-    location: ["Winter Meeting Room", "Spring Meeting Room"],
+    zone: ["Winter Meeting Room", "Spring Meeting Room"],
     asset: ["WIN-001", "WIN-002", "SPR-001", "SPR-002"],
     PM: "YNY-IC 005",
     status: "Released",

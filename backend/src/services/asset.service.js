@@ -3,6 +3,7 @@ import { safeRequest } from "../utils/httpClient.js";
 import { eamRequest } from "../lib/eamRequest.js";
 
 import { executeGrid, createFilter, mapGridRecords } from "./grid.service.js";
+import { HXGN_STATUS } from "../constants/hxgnStatus.js";
 
 function transformAsset(data) {
   const asset = data?.Result?.ResultData?.AssetEquipment;
@@ -182,12 +183,14 @@ export async function searchAssetsService(filtersInput, context) {
   return mapped.map(fields => ({
     assetCode: fields.ass_code,
     description: fields.ass_desc,
-    organization: fields.ass_org,
-    organizationDescription: fields.org_desc,
-    status: fields.ass_status,
-    class: fields.cls_desc,
-    primarySystem: fields.obj_primarysystem,
+    organization: fields.ass_org_code,
+    organizationDescription: fields.ass_org,
+    location: fields.ass_loc,
+    department: fields.ass_dept,
+    status: HXGN_STATUS[fields.ass_condition] ?? fields.ass_condition,
+    zone: fields.ass_zone,
     commissionDate: fields.ass_commiss,
-    document: fields.dae_document
+    profilePicture: fields.ass_profile_pic,
+    rfidCode: fields.ass_rfid_code
   }));
 }

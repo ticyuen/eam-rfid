@@ -174,12 +174,12 @@ const WorkOrder = () => {
                   <strong>PM: </strong> {wo.PM || "-"}
                 </Typography>
 
-                {/* LOCATIONS */}
+                {/* ZONES */}
                 <Typography variant="body2" fontWeight="bold" sx={{ mt: 2 }}>
-                  Locations
+                  Zones
                 </Typography>
 
-                {wo.location?.map((loc) => (
+                {wo.zone?.map((loc) => (
                   <Box
                     key={loc}
                     sx={{

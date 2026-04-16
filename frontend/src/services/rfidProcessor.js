@@ -1,6 +1,6 @@
 import { ASSET_STATUS } from "../constants";
 
-export function processRFIDScan(existingTableData, scannedCodes, selectedLocation) {
+export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
 
   const normalizedCodes = scannedCodes
     .map(c => c.trim().toUpperCase())
@@ -48,7 +48,7 @@ export function processRFIDScan(existingTableData, scannedCodes, selectedLocatio
   const newlyDetectedAssets = [...scannedSet]
     .filter(code => !existingCodes.has(code))
     .map(code => ({
-      id: `new-${code}-${selectedLocation}`,
+      id: `new-${code}-${selectedZone}`,
       assetCode: code,
       assetDesc: "-",
       parentAsset: "-",

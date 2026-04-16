@@ -29,7 +29,7 @@ export default function NearbyAssetsScan() {
       .filter(Boolean)
       .map((asset) => ({
         ...asset,
-        id: `${asset.assetCode}-${asset.location}`,
+        id: `${asset.assetCode}-${asset.zone}`,
       }));
   }, [scanInput]);
 

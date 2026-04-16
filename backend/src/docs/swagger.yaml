@@ -286,22 +286,22 @@ paths:
         "500":
           description: Internal server error
 
-  /api/asset/location/{location}:
+  /api/asset/zone/{zone}:
     get:
-      summary: Get assets by location (primary system)
-      description: Retrieve assets filtered by location (OBJ_PRIMARYSYSTEM)
+      summary: Get assets by zone (primary system)
+      description: Retrieve assets filtered by zone (OBJ_PRIMARYSYSTEM)
       tags:
         - Asset
       security:
         - bearerAuth: []
       parameters:
         - in: path
-          name: location
+          name: zone
           required: true
           schema:
             type: string
           example: CAMRY
-          description: Primary system / location
+          description: Primary system / zone
 
       responses:
         "200":
