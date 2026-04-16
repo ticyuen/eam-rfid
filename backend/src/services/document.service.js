@@ -6,6 +6,17 @@ function extractBase64(data) {
   return data?.Result?.ResultData?.Document?.DocumentAttachment?.FILECONTENT;
 }
 
+function detectMimeType(base64) {
+  if (!base64) return "image/jpeg";
+
+  if (base64.startsWith("/9j/")) return "image/jpeg";
+  if (base64.startsWith("iVBORw0KGgo")) return "image/png";
+  if (base64.startsWith("R0lGOD")) return "image/gif";
+  if (base64.startsWith("UklGR")) return "image/webp";
+
+  return "image/jpeg";
+}
+
 export async function getDocumentService({ documentCode }, context) {
   const raw = `${documentCode}#*`;
   const encodedId = encodeURIComponent(encodeURIComponent(raw));
@@ -19,5 +30,14 @@ export async function getDocumentService({ documentCode }, context) {
 
   const base64 = extractBase64(res.data);
 
-  return base64;
+  if (!base64) return null;
+
+  const mimeType = detectMimeType(base64);
+
+  return {
+    base64,
+    mimeType,
+    dataUrl: `data:${mimeType};base64,${base64}`
+  };
 }
+

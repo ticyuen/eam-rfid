@@ -66,7 +66,7 @@ export const getAssetsByZone = asyncHandler(async (req, res) => {
   }
 
   const data = await searchAssetsService(
-    { primarySystem: zone },
+    { zone },
     req.context
   );
 
@@ -75,15 +75,14 @@ export const getAssetsByZone = asyncHandler(async (req, res) => {
 
 export const searchAssets = asyncHandler(async (req, res) => {
   const {
-    primarySystem,
+    zone,
     status,
     org,
-    classDesc,
     assetCode
   } = req.query;
 
   const data = await searchAssetsService(
-    { primarySystem, status, org, classDesc, assetCode },
+    { zone, status, org, assetCode },
     req.context
   );
 

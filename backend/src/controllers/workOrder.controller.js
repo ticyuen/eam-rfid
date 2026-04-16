@@ -37,7 +37,7 @@ export const addWorkOrderScan = asyncHandler(async (req, res) => {
       workOrderId,
       status,
       deviceName,
-      deviceIp,
+      deviceIp: deviceIp ?? req.context?.clientIp,
       remark
     },
     req.context

@@ -134,7 +134,24 @@ const PerformInventoryCheck = () => {
     setOpenScanModal(false);
   };
 
-  // SAVE RESULT
+  const handleReset = async () => {
+    if (!selectedZone) return;
+
+    const confirm = window.confirm(
+      "Are you sure you want to reset this scan? All progress will be lost."
+    );
+
+    if (!confirm) return;
+
+    try {
+      const raw = await fetchAssetsByZone(selectedZone);
+      const resetData = mapAssets(raw, selectedZone); 
+      setTableData(resetData);
+    } catch (err) {
+      console.error("Reset failed:", err);
+    }
+  };
+
   const handleSave = () => {
     const currentWO = workOrders.find(
       (wo) => wo.id.toString() === id
@@ -240,10 +257,6 @@ const PerformInventoryCheck = () => {
         <strong>WO Status: </strong> {workOrder.status}
       </Typography>
 
-      <Typography variant="body2" sx={{ mb: 1 }}>
-        <strong>zone: </strong> {selectedZone}
-      </Typography>
-
       <FormControl fullWidth size="small" sx={{ mt: 2, mb: 2 }}>
         <InputLabel>zone</InputLabel>
         <Select
@@ -259,8 +272,55 @@ const PerformInventoryCheck = () => {
         </Select>
       </FormControl>
 
-      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, mb: 4 }}>
-        {/* SCAN BUTTON */}
+      <Box sx={{ display: "flex", gap: 1, mb: 4 }}>
+
+        <Button 
+          sx={{
+            height: 56,
+            fontSize: 16,
+            fontWeight: "bold"
+          }}
+          fullWidth 
+          variant="outlined" 
+          color="error" 
+          onClick={handleReset}
+        >
+          🔄 Reset
+        </Button>
+
+        <Button 
+          sx={{
+            height: 56,
+            fontSize: 16,
+            fontWeight: "bold"
+          }}
+          fullWidth 
+          variant="contained" 
+          onClick={handleSave}
+        >
+          💾 Save
+        </Button>
+
+      </Box>
+
+      <Box sx={{ display: "flex", gap: 1, mb: 4 }}>
+
+        <Button 
+          sx={{
+            height: 56,
+            fontSize: 16,
+            fontWeight: "bold"
+          }}
+          fullWidth 
+          variant="contained" 
+          onClick={() => setOpenScanModal(true)}
+        >
+          📡 Scan RFID
+        </Button>
+
+      </Box>
+
+      {/* <Box sx={{ display: "flex", justifyContent: "space-between", gap: 1, mb: 4 }}>
         <Button
           variant="contained"
           // size="large"
@@ -277,7 +337,6 @@ const PerformInventoryCheck = () => {
           📡 Scan RFID
         </Button>
 
-        {/* SAVE BUTTON */}
         <Button
           variant="contained"
           onClick={handleSave}
@@ -291,7 +350,7 @@ const PerformInventoryCheck = () => {
         >
           💾 Save Result
         </Button>
-      </Box>
+      </Box> */}
 
       {/* COUNTERS */}
       <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
@@ -419,12 +478,12 @@ const PerformInventoryCheck = () => {
               <Box>
                 {/* MAIN: DESCRIPTION */}
                 <Typography fontWeight="bold" fontSize={16}>
-                  {asset.assetDesc || "Unknown Asset"}
+                  {asset.assetCode || "NEW Asset"}
                 </Typography>
 
                 {/* secondary: asset code */}
-                <Typography variant="caption" color="text.secondary">
-                  {asset.assetCode}
+                <Typography component="div" variant="caption" color="text.secondary">
+                  {asset.assetDesc}
                 </Typography>
 
                 {/* status chip */}
@@ -432,6 +491,7 @@ const PerformInventoryCheck = () => {
                   icon={getStatusMeta(asset.status).icon}
                   label={getStatusMeta(asset.status).label}
                   size="small"
+                  component="div"
                   sx={{
                     mt: 1,
                     backgroundColor: getStatusMeta(asset.status).bg,

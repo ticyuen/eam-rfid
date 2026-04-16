@@ -15,7 +15,7 @@ export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
     .filter(asset => asset.status !== ASSET_STATUS.NEW)
     .map(asset => {
 
-      const code = asset.assetCode.trim().toUpperCase();
+      const code = asset.rfidCode.trim().toUpperCase();
 
       // Already matched → KEEP IT
       if (asset.status === ASSET_STATUS.MATCHED) {
@@ -42,14 +42,14 @@ export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
    * 3. Detect newly scanned assets
    */
   const existingCodes = new Set([
-    ...existingTableData.map(a => a.assetCode.trim().toUpperCase())
+    ...existingTableData.map(a => a.rfidCode.trim().toUpperCase())
   ]);
 
   const newlyDetectedAssets = [...scannedSet]
     .filter(code => !existingCodes.has(code))
     .map(code => ({
       id: `new-${code}-${selectedZone}`,
-      assetCode: code,
+      rfidCode: code,
       assetDesc: "-",
       parentAsset: "-",
       parentDescription: "-",

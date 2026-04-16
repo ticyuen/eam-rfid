@@ -125,48 +125,38 @@ export async function getAssetsByLocationService({ primarySystem }, context) {
 
 export async function searchAssetsService(filtersInput, context) {
   const {
-    primarySystem,
+    zone,
     status,
     org,
-    classDesc,
     assetCode
   } = filtersInput;
 
   const filters = [];
 
-  if (primarySystem) {
+  if (zone) {
     filters.push(createFilter({
-      alias: "OBJ_PRIMARYSYSTEM",
-      value: primarySystem
+      alias: "ass_zone",
+      value: zone
     }));
   }
 
   if (status) {
     filters.push(createFilter({
-      alias: "ASS_STATUS",
+      alias: "ass_condition",
       value: status
     }));
   }
 
   if (org) {
     filters.push(createFilter({
-      alias: "ASS_ORG",
+      alias: "ass_org_code",
       value: org
-    }));
-  }
-
-  if (classDesc) {
-    filters.push(createFilter({
-      alias: "CLS_DESC",
-      // operator: "LIKE",
-      value: `${classDesc}`
     }));
   }
 
   if (assetCode) {
     filters.push(createFilter({
       alias: "ASS_CODE",
-      // operator: "LIKE",
       value: `${assetCode}`
     }));
   }
