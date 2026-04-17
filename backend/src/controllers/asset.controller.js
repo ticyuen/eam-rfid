@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
-import { getAssetService, searchAssetsService } from "../services/asset.service.js";
+import { getAssetService, scanAssetsByRFIDService, searchAssetsService } from "../services/asset.service.js";
 import { getDocumentService } from "../services/document.service.js";
 
 export const getAsset = asyncHandler(async (req, res) => {
@@ -78,13 +78,29 @@ export const searchAssets = asyncHandler(async (req, res) => {
     zone,
     status,
     org,
-    assetCode
+    assetCode,
+    rfidCode
   } = req.query;
 
   const data = await searchAssetsService(
-    { zone, status, org, assetCode },
+    { zone, status, org, assetCode, rfidCode },
     req.context
   );
 
   res.json(new ApiResponse({ data }));
+});
+
+export const scanAssetsByRFID = asyncHandler(async (req, res) => {
+  const { rfidCodes, org } = req.body;
+
+  if (!rfidCodes || !Array.isArray(rfidCodes) || rfidCodes.length === 0) {
+    throw new ApiError(400, "rfidCodes array is required");
+  }
+
+  const result = await scanAssetsByRFIDService({ rfidCodes, org }, req.context);
+
+  res.json(new ApiResponse({
+    data: result.assets,
+    message: ""
+  }));
 });

@@ -128,10 +128,18 @@ export async function searchAssetsService(filtersInput, context) {
     zone,
     status,
     org,
-    assetCode
+    assetCode,
+    rfidCode
   } = filtersInput;
 
   const filters = [];
+
+  if (rfidCode) {
+    filters.push(createFilter({
+      alias: "ass_rfid_code",
+      value: rfidCode
+    }));
+  } 
 
   if (zone) {
     filters.push(createFilter({
@@ -183,4 +191,82 @@ export async function searchAssetsService(filtersInput, context) {
     profilePicture: fields.ass_profile_pic,
     rfidCode: fields.ass_rfid_code
   }));
+}
+
+const CHUNK_SIZE = 20; // safe size for HXGN
+
+function chunkArray(array, size) {
+  const result = [];
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size));
+  }
+  return result;
+}
+
+function buildRFIDFilters(rfidCodes) {
+  return rfidCodes.map((rfid) =>
+    createFilter({
+      alias: "ass_rfid_code",
+      operator: "=",
+      value: rfid,
+      joiner: "OR"
+    })
+  );
+}
+
+export async function scanAssetsByRFIDService(input, context) {
+  const { rfidCodes, org } = input;
+  const chunks = chunkArray(rfidCodes, CHUNK_SIZE);
+
+  // Run chunks in parallel (but safe)
+  const results = await Promise.all(
+    chunks.map(async (chunk) => {
+      const filters = buildRFIDFilters(chunk);
+
+      const raw = await executeGrid({
+        gridId: "100015",
+        gridName: "0U5001",
+        userFunctionName: "0U5001",
+        filters
+      }, context);
+
+      return mapGridRecords(raw);
+    })
+  );
+
+  // Flatten results
+  const allRecords = results.flat();
+
+  // Deduplicate (important!)
+  const uniqueMap = new Map();
+
+  for (const fields of allRecords) {
+    uniqueMap.set(fields.ass_rfid_code, fields);
+  }
+
+  let records = Array.from(uniqueMap.values());
+
+  if (org) {
+    records = records.filter(
+      (fields) => fields.ass_org_code === org
+    );
+  }
+
+  const assets = records.map(fields => ({
+    assetCode: fields.ass_code,
+    description: fields.ass_desc,
+    organization: fields.ass_org_code,
+    organizationDescription: fields.ass_org,
+    location: fields.ass_loc,
+    department: fields.ass_dept,
+    status: HXGN_STATUS[fields.ass_condition] ?? fields.ass_condition,
+    zone: fields.ass_zone,
+    commissionDate: fields.ass_commiss,
+    profilePicture: fields.ass_profile_pic,
+    rfidCode: fields.ass_rfid_code
+  }));
+
+  return {
+    assets
+  };
 }
