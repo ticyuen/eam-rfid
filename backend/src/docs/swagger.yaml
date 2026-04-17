@@ -251,6 +251,12 @@ paths:
             type: string
           description: Asset code
 
+        - in: query
+          name: rfidCode
+          schema:
+            type: string
+          description: Single RFID code
+
       responses:
         "200":
           description: Successful response
@@ -277,6 +283,95 @@ paths:
         "401":
           description: Unauthorized
 
+        "500":
+          description: Internal server error
+
+  /api/asset/rfid/scan:
+    post:
+      summary: Scan assets by RFID
+      description: Scan multiple RFID tags and return matching assets.
+      tags:
+        - Asset
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rfidCodes
+              properties:
+                rfidCodes:
+                  type: array
+                  items:
+                    type: string
+                  example: ["E280116060000206126D6D20", "3014F41460000040000022F0"]
+                  description: List of RFID codes to scan
+
+                org:
+                  type: string
+                  example: "TSUSHO"
+                  description: Optional organization filter (applied after fetch)
+
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        assetCode:
+                          type: string
+                          example: "A1001"
+                        description:
+                          type: string
+                          example: "Pump Motor"
+                        organization:
+                          type: string
+                          example: "ORG1"
+                        organizationDescription:
+                          type: string
+                          example: "Main Plant"
+                        location:
+                          type: string
+                          example: "ZONE-A"
+                        department:
+                          type: string
+                          example: "Maintenance"
+                        status:
+                          type: string
+                          example: "Installed"
+                        zone:
+                          type: string
+                          example: "Z1"
+                        commissionDate:
+                          type: string
+                          example: "2024-01-01T00:00:00Z"
+                        profilePicture:
+                          type: string
+                          example: "DOC123"
+                        rfidCode:
+                          type: string
+                          example: "RF001"
+                  message:
+                    type: string
+                    example: ""
+
+        "400":
+          description: Invalid request
+        "401":
+          description: Unauthorized
         "500":
           description: Internal server error
 
