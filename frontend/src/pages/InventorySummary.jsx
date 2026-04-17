@@ -18,7 +18,7 @@ import NewReleasesIcon from "@mui/icons-material/NewReleases";
 
 import AssetDetailsModal from "../components/AssetDetailsModal";
 import { useWorkOrderStore } from "../store";
-import { ASSET_STATUS } from "../constants";
+import { ASSET_SCAN_STATUS } from "../constants";
 
 const InventorySummary = () => {
   const { id } = useParams();
@@ -61,7 +61,7 @@ const InventorySummary = () => {
   // ================================
   const getStatusMeta = (status) => {
     switch (status) {
-      case ASSET_STATUS.MATCHED:
+      case ASSET_SCAN_STATUS.MATCHED:
         return {
           color: "#2e7d32",
           bg: "#e8f5e9",
@@ -69,7 +69,7 @@ const InventorySummary = () => {
           label: "Matched"
         };
 
-      case ASSET_STATUS.MISSING:
+      case ASSET_SCAN_STATUS.MISSING:
         return {
           color: "#ed6c02",
           bg: "#fff3e0",
@@ -77,7 +77,7 @@ const InventorySummary = () => {
           label: "Missing"
         };
 
-      case ASSET_STATUS.NEW:
+      case ASSET_SCAN_STATUS.NEW:
         return {
           color: "#d32f2f",
           bg: "#fdecea",
@@ -109,13 +109,13 @@ const InventorySummary = () => {
   const stats = useMemo(() => {
     const total = allAssets.length;
     const matched = allAssets.filter(
-      (a) => a.status === ASSET_STATUS.MATCHED
+      (a) => a.status === ASSET_SCAN_STATUS.MATCHED
     ).length;
     const missing = allAssets.filter(
-      (a) => a.status === ASSET_STATUS.MISSING
+      (a) => a.status === ASSET_SCAN_STATUS.MISSING
     ).length;
     const newCount = allAssets.filter(
-      (a) => a.status === ASSET_STATUS.NEW
+      (a) => a.status === ASSET_SCAN_STATUS.NEW
     ).length;
 
     return { total, matched, missing, newCount };
@@ -169,13 +169,13 @@ const InventorySummary = () => {
           clickable
           onClick={() =>
             setStatusFilter((p) =>
-              p === ASSET_STATUS.MATCHED
+              p === ASSET_SCAN_STATUS.MATCHED
                 ? null
-                : ASSET_STATUS.MATCHED
+                : ASSET_SCAN_STATUS.MATCHED
             )
           }
           variant={
-            statusFilter === ASSET_STATUS.MATCHED
+            statusFilter === ASSET_SCAN_STATUS.MATCHED
               ? "filled"
               : "outlined"
           }
@@ -187,13 +187,13 @@ const InventorySummary = () => {
           clickable
           onClick={() =>
             setStatusFilter((p) =>
-              p === ASSET_STATUS.MISSING
+              p === ASSET_SCAN_STATUS.MISSING
                 ? null
-                : ASSET_STATUS.MISSING
+                : ASSET_SCAN_STATUS.MISSING
             )
           }
           variant={
-            statusFilter === ASSET_STATUS.MISSING
+            statusFilter === ASSET_SCAN_STATUS.MISSING
               ? "filled"
               : "outlined"
           }
@@ -205,11 +205,11 @@ const InventorySummary = () => {
           clickable
           onClick={() =>
             setStatusFilter((p) =>
-              p === ASSET_STATUS.NEW ? null : ASSET_STATUS.NEW
+              p === ASSET_SCAN_STATUS.NEW ? null : ASSET_SCAN_STATUS.NEW
             )
           }
           variant={
-            statusFilter === ASSET_STATUS.NEW
+            statusFilter === ASSET_SCAN_STATUS.NEW
               ? "filled"
               : "outlined"
           }
@@ -223,7 +223,7 @@ const InventorySummary = () => {
         )}
 
         {filteredAssets.map((asset) => {
-          const meta = getStatusMeta(asset.status);
+          const meta = getStatusMeta(asset.scanStatus);
 
           return (
             <Card
@@ -250,7 +250,7 @@ const InventorySummary = () => {
                 {/* LEFT */}
                 <Box>
                   <Typography fontWeight="bold">
-                    {asset.assetDesc}
+                    {asset.description}
                   </Typography>
 
                   <Typography

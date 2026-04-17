@@ -25,5 +25,5 @@ export function getDeviceName() {
   // }
 
   // return `${browser.name || "Unknown"} Device`;
-  return `${device.model}, ${os.name}, ${browser.name}`;
+  return `${device.model ?? "-"}, ${os.name ?? "-"}, ${browser.name ?? "-"}`;
 }

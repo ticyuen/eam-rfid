@@ -31,18 +31,18 @@ export default function AssetManagement() {
     }, 200);
   }, []);
 
-  const descriptionOptions = [...new Set(tableData.map((a) => a.assetDesc))];
+  const descriptionOptions = [...new Set(tableData.map((a) => a.description))];
   const locationOptions = [...new Set(tableData.map((a) => a.zone))];
 
   const columns = useMemo(() => [
     { field: "assetCode", headerName: "Asset Code" },
-    { field: "assetDesc", headerName: "Description" },
+    { field: "description", headerName: "Description" },
     // { field: "zone", headerName: "zone" },
   ], []);
 
   const filteredData = tableData.filter((asset) => {
     return (
-      (descFilter === "All" || asset.assetDesc === descFilter) &&
+      (descFilter === "All" || asset.description === descFilter) &&
       (locationFilter === "All" || asset.zone === locationFilter)
     );
   });

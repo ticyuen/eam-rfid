@@ -1,6 +1,10 @@
-import { ASSET_STATUS } from "../constants";
+import { ASSET_SCAN_STATUS } from "../constants";
 
 export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
+
+  console.log('existingTableData: ', existingTableData);
+  console.log('scannedCodes: ', scannedCodes);
+  console.log('selectedZone: ', selectedZone);
 
   const normalizedCodes = scannedCodes
     .map(c => c.trim().toUpperCase())
@@ -12,19 +16,19 @@ export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
    * 1. Update existing assets WITHOUT resetting previous MATCHED
    */
   const updatedExistingAssets = existingTableData
-    .filter(asset => asset.status !== ASSET_STATUS.NEW)
+    .filter(asset => asset.scanStatus !== ASSET_SCAN_STATUS.NEW)
     .map(asset => {
 
       const code = asset.rfidCode.trim().toUpperCase();
 
       // Already matched → KEEP IT
-      if (asset.status === ASSET_STATUS.MATCHED) {
+      if (asset.scanStatus === ASSET_SCAN_STATUS.MATCHED) {
         return asset;
       }
 
       // If scanned now → upgrade to MATCHED
       if (scannedSet.has(code)) {
-        return { ...asset, status: ASSET_STATUS.MATCHED };
+        return { ...asset, status: ASSET_SCAN_STATUS.MATCHED };
       }
 
       // Otherwise DO NOT downgrade
@@ -35,7 +39,7 @@ export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
    * 2. Keep ALL existing NEW assets (no need to rescan)
    */
   const existingNewAssets = existingTableData.filter(
-    asset => asset.status === ASSET_STATUS.NEW
+    asset => asset.scanStatus === ASSET_SCAN_STATUS.NEW
   );
 
   /**
@@ -50,12 +54,16 @@ export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
     .map(code => ({
       id: `new-${code}-${selectedZone}`,
       rfidCode: code,
-      assetDesc: "-",
+      description: "-",
       parentAsset: "-",
       parentDescription: "-",
       lastUpdated: new Date().toISOString(),
-      status: ASSET_STATUS.NEW
+      status: ASSET_SCAN_STATUS.NEW
     }));
+
+  console.log('updatedExistingAssets: ', updatedExistingAssets);
+  console.log('existingNewAssets: ', existingNewAssets);
+  console.log('newlyDetectedAssets: ', newlyDetectedAssets);
 
   return [
     ...updatedExistingAssets,

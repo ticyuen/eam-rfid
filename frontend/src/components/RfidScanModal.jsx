@@ -41,6 +41,8 @@ const RfidScanModal = ({ open, onClose, onProcess }) => {
       )
     ];
 
+    console.log('parsedCodes: ', parsedCodes);
+
     onProcess(parsedCodes);
 
     // clear input instantly
@@ -81,7 +83,7 @@ const RfidScanModal = ({ open, onClose, onProcess }) => {
 
       <DialogContent>
         <Typography sx={{ mb: 2 }}>
-          Scan or insert asset codes here (Separate by comma or newline)
+          Scan or insert asset codes here (Separate by newline)
         </Typography>
 
         <TextField

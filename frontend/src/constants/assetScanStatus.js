@@ -1,4 +1,4 @@
-export const ASSET_STATUS = {
+export const ASSET_SCAN_STATUS = {
   MATCHED: "MATCHED",
   MISSING: "MISSING",
   NEW: "NEW"

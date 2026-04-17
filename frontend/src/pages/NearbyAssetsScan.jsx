@@ -40,7 +40,7 @@ export default function NearbyAssetsScan() {
 
   const columns = useMemo(() => [
     { field: "assetCode", headerName: "Asset Code" },
-    { field: "assetDesc", headerName: "Description" },
+    { field: "description", headerName: "Description" },
     {
       field: "inspect",
       headerName: "Inspect",

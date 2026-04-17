@@ -122,12 +122,11 @@ export default function AssetDetailsModal({ open, onClose, asset }) {
             </Typography>
 
             <Typography variant="body1" color="text.secondary">
-              {asset.assetDesc}
+              {asset.description}
             </Typography>
 
             <Chip
-              label={asset.condition}
-              color="success"
+              label={asset.status}
               size="small"
               sx={{ mt: 1 }}
             />

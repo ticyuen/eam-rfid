@@ -19,15 +19,23 @@ export const mapAssets = (data, zone) => {
   return data.map((a) => ({
     id: `${a.assetCode}-${zone}`,
     assetCode: a.assetCode,
-    assetDesc: a.description,
+    description: a.description,
     zone: a.zone,
     organization: a.organizationDescription,
     location: a.location,
     department: a.department,
     commissionDate: a.commissionDate,
-    condition: a.status,
+    status: a.status,
     profilePicture: a.profilePicture || null,
     rfidCode: a.rfidCode,
-    status: "MISSING" // default before scan
+    scanStatus: "MISSING" // default before scan
   }));
+};
+
+export const scanAssetsByRfid = async (rfidCodes) => {
+  const res = await api.post("/asset/rfid/scan", {
+    rfidCodes,
+  });
+
+  return res.data?.data || [];
 };

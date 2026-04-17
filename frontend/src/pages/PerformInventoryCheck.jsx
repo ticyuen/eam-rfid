@@ -8,9 +8,9 @@ import AssetDetailsModal from "../components/AssetDetailsModal";
 import RfidScanModal from "../components/RfidScanModal";
 
 import { processRFIDScan } from "../services/rfidProcessor";
-import { ASSET_STATUS, WorkOrderStatus } from "../constants";
+import { ASSET_SCAN_STATUS, WorkOrderStatus } from "../constants";
 import { useWorkOrderStore } from "../store";
-import { fetchAssetsByZone, mapAssets } from "../api/asset";
+import { fetchAssetsByZone, mapAssets, scanAssetsByRfid } from "../api/asset";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
@@ -51,18 +51,18 @@ const PerformInventoryCheck = () => {
 
     // Apply filter if selected
     if (statusFilter) {
-      data = data.filter(a => a.status === statusFilter);
+      data = data.filter(a => a.scanStatus === statusFilter);
     }
 
     // Priority sorting
     const priority = {
-      [ASSET_STATUS.NEW]: 0,
-      [ASSET_STATUS.MISSING]: 1,
-      // [ASSET_STATUS.MATCHED]: 2
+      [ASSET_SCAN_STATUS.NEW]: 0,
+      [ASSET_SCAN_STATUS.MISSING]: 1,
+      // [ASSET_SCAN_STATUS.MATCHED]: 2
     };
 
     return [...data].sort(
-      (a, b) => (priority[a.status] ?? 99) - (priority[b.status] ?? 99)
+      (a, b) => (priority[a.scanStatus] ?? 99) - (priority[b.scanStatus] ?? 99)
     );
 
   }, [tableData, statusFilter]);
@@ -109,29 +109,69 @@ const PerformInventoryCheck = () => {
     let newCount = 0;
 
     tableData.forEach((a) => {
-      if (a.status === ASSET_STATUS.MATCHED) matched++;
-      if (a.status === ASSET_STATUS.MISSING) missing++;
-      if (a.status === ASSET_STATUS.NEW) newCount++;
+      if (a.scanStatus === ASSET_SCAN_STATUS.MATCHED) matched++;
+      if (a.scanStatus === ASSET_SCAN_STATUS.MISSING) missing++;
+      if (a.scanStatus === ASSET_SCAN_STATUS.NEW) newCount++;
     });
 
     return { matched, missing, new: newCount };
   }, [tableData]);
 
-  // PROCESS SCAN
-  const handleProcessScan = (codes) => {
+  const handleProcessScan = async (codes) => {
     if (!codes || codes.length === 0) {
       alert("No RFID detected");
       return;
     }
 
-    const updated = processRFIDScan(
+    // 1. existing local scan logic
+    const updatedLocal = processRFIDScan(
       tableData,
       codes,
       selectedZone
     );
 
-    setTableData(updated);
+    setTableData(updatedLocal);
     setOpenScanModal(false);
+
+    // 2. NEW: validate scanned codes with backend
+    try {
+      const resolvedAssets = await scanAssetsByRfid(codes);
+
+      setTableData((prev) => {
+        const existingMap = new Map(
+          prev.map((a) => [a.rfidCode?.toUpperCase(), a])
+        );
+
+        const merged = [...prev];
+
+        resolvedAssets.forEach((asset) => {
+          const code = asset.rfidCode?.toUpperCase();
+
+          const mapped = {
+            ...asset,
+            id: `${asset.assetCode}-${asset.zone}`,
+            status:
+              asset.zone === selectedZone
+                ? ASSET_SCAN_STATUS.MATCHED
+                : ASSET_SCAN_STATUS.NEW, // belongs elsewhere
+          };
+
+          // If already exists → replace
+          if (existingMap.has(code)) {
+            const idx = merged.findIndex(
+              (a) => a.rfidCode?.toUpperCase() === code
+            );
+            merged[idx] = mapped;
+          } else {
+            merged.push(mapped);
+          }
+        });
+
+        return merged;
+      });
+    } catch (err) {
+      console.error("RFID resolve failed:", err);
+    }
   };
 
   const handleReset = async () => {
@@ -201,11 +241,11 @@ const PerformInventoryCheck = () => {
 
   const getCardColor = (status) => {
     switch (status) {
-      case ASSET_STATUS.MATCHED:
+      case ASSET_SCAN_STATUS.MATCHED:
         return "#fafffa"; // soft green
-      case ASSET_STATUS.MISSING:
+      case ASSET_SCAN_STATUS.MISSING:
         return "#fcf9f5"; // soft amber
-      case ASSET_STATUS.NEW:
+      case ASSET_SCAN_STATUS.NEW:
         return "#fff9f8"; // soft red
       default:
         return "#ffffff";
@@ -214,21 +254,21 @@ const PerformInventoryCheck = () => {
   
   const getStatusMeta = (status) => {
     switch (status) {
-      case ASSET_STATUS.MATCHED:
+      case ASSET_SCAN_STATUS.MATCHED:
         return {
           color: "#2e7d32",
           bg: "#e8f5e9",
           icon: <CheckCircleIcon fontSize="small" />,
           label: "Matched"
         };
-      case ASSET_STATUS.MISSING:
+      case ASSET_SCAN_STATUS.MISSING:
         return {
           color: "#ed6c02",
           bg: "#fff3e0",
           icon: <WarningAmberIcon fontSize="small" />,
           label: "Missing"
         };
-      case ASSET_STATUS.NEW:
+      case ASSET_SCAN_STATUS.NEW:
         return {
           color: "#d32f2f",
           bg: "#fdecea",
@@ -250,11 +290,11 @@ const PerformInventoryCheck = () => {
       </Typography>
 
       <Typography variant="body2">
-        <strong>WO: </strong> {workOrder.id}
+        <strong>Work Order: </strong> {workOrder.id}
       </Typography>
 
       <Typography variant="body2">
-        <strong>WO Status: </strong> {workOrder.status}
+        <strong>Work Order Status: </strong> {workOrder.status}
       </Typography>
 
       <FormControl fullWidth size="small" sx={{ mt: 2, mb: 2 }}>
@@ -272,17 +312,17 @@ const PerformInventoryCheck = () => {
         </Select>
       </FormControl>
 
-      <Box sx={{ display: "flex", gap: 1, mb: 4 }}>
+      <Box sx={{ display: "flex", gap: 1 }}>
 
         <Button 
           sx={{
-            height: 56,
-            fontSize: 16,
-            fontWeight: "bold"
+            height: 40,
+            // fontSize: 16,
+            // fontWeight: "bold"
           }}
           fullWidth 
           variant="outlined" 
-          color="error" 
+          color="error"
           onClick={handleReset}
         >
           🔄 Reset
@@ -290,20 +330,20 @@ const PerformInventoryCheck = () => {
 
         <Button 
           sx={{
-            height: 56,
-            fontSize: 16,
-            fontWeight: "bold"
+            // height: 56,
+            // fontSize: 16,
+            // fontWeight: "bold"
           }}
           fullWidth 
           variant="contained" 
           onClick={handleSave}
         >
-          💾 Save
+          💾 Save Result
         </Button>
 
       </Box>
 
-      <Box sx={{ display: "flex", gap: 1, mb: 4 }}>
+      <Box sx={{ display: "flex", gap: 1, mt: 2, mb: 4 }}>
 
         <Button 
           sx={{
@@ -376,7 +416,7 @@ const PerformInventoryCheck = () => {
         <Box
           onClick={() =>
             setStatusFilter(prev =>
-              prev === ASSET_STATUS.MATCHED ? null : ASSET_STATUS.MATCHED
+              prev === ASSET_SCAN_STATUS.MATCHED ? null : ASSET_SCAN_STATUS.MATCHED
             )
           }
           sx={{
@@ -385,7 +425,7 @@ const PerformInventoryCheck = () => {
             borderRadius: 2,
             textAlign: "center",
             backgroundColor:
-              statusFilter === ASSET_STATUS.MATCHED ? "#e8f5e9" : "#fff",
+              statusFilter === ASSET_SCAN_STATUS.MATCHED ? "#e8f5e9" : "#fff",
             cursor: "pointer",
             boxShadow: 1
           }}
@@ -400,7 +440,7 @@ const PerformInventoryCheck = () => {
         <Box
           onClick={() =>
             setStatusFilter(prev =>
-              prev === ASSET_STATUS.MISSING ? null : ASSET_STATUS.MISSING
+              prev === ASSET_SCAN_STATUS.MISSING ? null : ASSET_SCAN_STATUS.MISSING
             )
           }
           sx={{
@@ -409,7 +449,7 @@ const PerformInventoryCheck = () => {
             borderRadius: 2,
             textAlign: "center",
             backgroundColor:
-              statusFilter === ASSET_STATUS.MISSING ? "#fff3e0" : "#fff",
+              statusFilter === ASSET_SCAN_STATUS.MISSING ? "#fff3e0" : "#fff",
             cursor: "pointer",
             boxShadow: 1
           }}
@@ -424,7 +464,7 @@ const PerformInventoryCheck = () => {
         <Box
           onClick={() =>
             setStatusFilter(prev =>
-              prev === ASSET_STATUS.NEW ? null : ASSET_STATUS.NEW
+              prev === ASSET_SCAN_STATUS.NEW ? null : ASSET_SCAN_STATUS.NEW
             )
           }
           sx={{
@@ -433,7 +473,7 @@ const PerformInventoryCheck = () => {
             borderRadius: 2,
             textAlign: "center",
             backgroundColor:
-              statusFilter === ASSET_STATUS.NEW ? "#fdecea" : "#fff",
+              statusFilter === ASSET_SCAN_STATUS.NEW ? "#fdecea" : "#fff",
             cursor: "pointer",
             boxShadow: 1
           }}
@@ -460,8 +500,8 @@ const PerformInventoryCheck = () => {
               borderRadius: 3,
               background: "#fff",
               boxShadow: 3,
-              borderLeft: `6px solid ${getStatusMeta(asset.status).color}`,
-              backgroundColor: getCardColor(asset.status),
+              borderLeft: `6px solid ${getStatusMeta(asset.scanStatus).color}`,
+              backgroundColor: getCardColor(asset.scanStatus),
               transition: "all 0.25s ease",
                 "&:hover": {
                   transform: "translateY(-2px)",
@@ -478,24 +518,30 @@ const PerformInventoryCheck = () => {
               <Box>
                 {/* MAIN: DESCRIPTION */}
                 <Typography fontWeight="bold" fontSize={16}>
-                  {asset.assetCode || "NEW Asset"}
+                  🏷️ {asset.assetCode || "NEW Asset"}
                 </Typography>
 
                 {/* secondary: asset code */}
                 <Typography component="div" variant="caption" color="text.secondary">
-                  {asset.assetDesc}
+                  {asset.description}
                 </Typography>
+
+                {asset.zone && asset.zone !== selectedZone && (
+                  <Typography component="div" variant="caption" color="warning.main">
+                    Belongs to: {asset.zone}
+                  </Typography>
+                )}
 
                 {/* status chip */}
                 <Chip
-                  icon={getStatusMeta(asset.status).icon}
-                  label={getStatusMeta(asset.status).label}
+                  icon={getStatusMeta(asset.scanStatus).icon}
+                  label={getStatusMeta(asset.scanStatus).label}
                   size="small"
                   component="div"
                   sx={{
                     mt: 1,
-                    backgroundColor: getStatusMeta(asset.status).bg,
-                    color: getStatusMeta(asset.status).color,
+                    backgroundColor: getStatusMeta(asset.scanStatus).bg,
+                    color: getStatusMeta(asset.scanStatus).color,
                     fontWeight: 600
                   }}
                 />
