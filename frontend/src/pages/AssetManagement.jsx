@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -9,7 +9,7 @@ import {
   InputLabel,
 } from "@mui/material";
 import { assetDetails } from "../mock/assetDetails.js";
-import ExpandableTable from "../components/ExpandableTable";
+import CardList from "../components/CardList";
 import AssetDetailsModal from "../components/AssetDetailsModal.jsx";
 
 export default function AssetManagement() {
@@ -33,12 +33,6 @@ export default function AssetManagement() {
 
   const descriptionOptions = [...new Set(tableData.map((a) => a.description))];
   const locationOptions = [...new Set(tableData.map((a) => a.zone))];
-
-  const columns = useMemo(() => [
-    { field: "assetCode", headerName: "Asset Code" },
-    { field: "description", headerName: "Description" },
-    // { field: "zone", headerName: "zone" },
-  ], []);
 
   const filteredData = tableData.filter((asset) => {
     return (
@@ -97,10 +91,24 @@ export default function AssetManagement() {
         </FormControl>
       </Box>
 
-      <ExpandableTable
-        columns={columns}
-        rows={filteredData}
+      <CardList
+        data={filteredData}
         onInspect={handleInspectAsset}
+        renderContent={(asset) => (
+          <>
+            <Typography fontWeight="bold">
+              {asset.assetCode}
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              {asset.description}
+            </Typography>
+
+            <Typography variant="caption">
+              {asset.zone}
+            </Typography>
+          </>
+        )}
       />
 
       <AssetDetailsModal

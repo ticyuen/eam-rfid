@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Box, Typography, TextField, IconButton } from "@mui/material";
-import ExpandableTable from "../components/ExpandableTable";
+import CardList from "../components/CardList";
 import AssetDetailsModal from "../components/AssetDetailsModal";
 import { assetDetails } from "../mock/assetDetails";
 
@@ -38,29 +38,26 @@ export default function NearbyAssetsScan() {
     setOpenModal(true);
   };
 
-  const columns = useMemo(() => [
-    { field: "assetCode", headerName: "Asset Code" },
-    { field: "description", headerName: "Description" },
-    {
-      field: "inspect",
-      headerName: "Inspect",
-      renderCell: (row) => (
-        <IconButton size="small" onClick={() => handleInspect(row)}>
-          🔍
-        </IconButton>
-      ),
-    },
-  ], []);
-
   return (
     <Box sx={{ p: 1 }}>
       <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
         Nearby Assets Scan
       </Typography>
 
-      <ExpandableTable
-        columns={columns}
-        rows={tableData}
+      <CardList
+        data={tableData}
+        onInspect={handleInspect}
+        renderContent={(asset) => (
+          <>
+            <Typography fontWeight="bold">
+              {asset.assetCode}
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              {asset.description}
+            </Typography>
+          </>
+        )}
       />
 
       <TextField
