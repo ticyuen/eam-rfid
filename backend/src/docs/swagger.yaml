@@ -615,3 +615,109 @@ paths:
           description: Unauthorized
         500:
           description: Server error
+
+  /api/work-order-scan/assets:
+    get:
+      summary: Get scanned assets by work order
+      description: Retrieve scanned asset results for a given work order and scan sequence.
+      tags:
+        - Work Order Scan
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: workOrderId
+          required: true
+          schema:
+            type: string
+          description: Work Order ID
+          example: 30085
+
+        - in: query
+          name: scanSeq
+          required: false
+          schema:
+            type: integer
+          description: Scan sequence number
+          example: 1
+
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        assetCode:
+                          type: string
+                          example: "FF25001/HQ"
+                        description:
+                          type: string
+                          example: "PANASONIC MWO NN-ST34NBMPQ"
+                        organization:
+                          type: string
+                          example: "Toyota Tsusho"
+                        organizationCode:
+                          type: string
+                          example: "TSUSHO"
+                        location:
+                          type: string
+                          example: "Head Office"
+                        department:
+                          type: string
+                          example: "GAD"
+                        zone:
+                          type: string
+                          example: "Pantry Area"
+                        zoneCode:
+                          type: string
+                          example: "PANTRY"
+                        currentZoneCode:
+                          type: string
+                          example: "PANTRY"
+                        status:
+                          type: string
+                          example: "I"
+                        scanStatus:
+                          type: string
+                          example: "MATCHED"
+                        scanSeq:
+                          type: integer
+                          example: 1
+                        rfidCode:
+                          type: string
+                          example: "E280116060000206126D6D20"
+                        reason:
+                          type: string
+                          example: ""
+                        commissionDate:
+                          type: string
+                          example: "26-SEP-2025 00:00"
+                        profilePicture:
+                          type: string
+                          example: "FF25001/HQ_PP1"
+                        workOrderId:
+                          type: string
+                          example: "30085"
+                        workOrderScanUuid:
+                          type: string
+                          example: "ADC50696-2E93-4333-AFEA-B55D1DD1586A"
+                  message:
+                    type: string
+                    example: ""
+
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal server error

@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { ApiError } from "../utils/apiError.js";
-import { saveWorkOrderScanResultService, getWorkOrderScanStatusService } from "../services/workOrderScan.service.js";
+import { saveWorkOrderScanResultService, getWorkOrderScanStatusService, getWorkOrderScanAssetsService } from "../services/workOrderScan.service.js";
 
 export const saveWorkOrderScanResult = asyncHandler(async (req, res) => {
   const { workOrderScanUuid, zoneCode } = req.params;
@@ -29,7 +29,7 @@ export const saveWorkOrderScanResult = asyncHandler(async (req, res) => {
   res.json(
     new ApiResponse({
       data: results,
-      message: "Scan(s) processed"
+      message: `${results?.total} Scan(s) processed`
     })
   );
 });
@@ -43,6 +43,21 @@ export const getWorkOrderScanStatus = asyncHandler(async (req, res) => {
 
   const data = await getWorkOrderScanStatusService(
     { workOrderId },
+    req.context
+  );
+
+  res.json(new ApiResponse({ data }));
+});
+
+export const getWorkOrderScanAssets = asyncHandler(async (req, res) => {
+  const { workOrderId, scanSeq } = req.query;
+
+  if (!workOrderId) {
+    throw new ApiError(400, "workOrderId is required");
+  }
+
+  const data = await getWorkOrderScanAssetsService(
+    { workOrderId, scanSeq },
     req.context
   );
 

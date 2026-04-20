@@ -95,7 +95,7 @@ export async function getAssetsByLocationService({ primarySystem }, context) {
     GRID_TYPE: { TYPE: "LIST" },
     GRID: {
       CURRENT_TAB_NAME: "LST",
-      GRID_ID: "100015",
+      GRID_ID: "100023",
       GRID_NAME: "0U5001",
       USER_FUNCTION_NAME: "0U5001",
       NUMBER_OF_ROWS_FIRST_RETURNED: 100
@@ -170,7 +170,7 @@ export async function searchAssetsService(filtersInput, context) {
   }
 
   const raw = await executeGrid({
-    gridId: "100015",
+    gridId: "100023",
     gridName: "0U5001",
     userFunctionName: "0U5001",
     filters
@@ -224,7 +224,7 @@ export async function scanAssetsByRFIDService(input, context) {
       const filters = buildRFIDFilters(chunk);
 
       const raw = await executeGrid({
-        gridId: "100015",
+        gridId: "100023",
         gridName: "0U5001",
         userFunctionName: "0U5001",
         filters

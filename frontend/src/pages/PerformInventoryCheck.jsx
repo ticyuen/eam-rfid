@@ -45,13 +45,25 @@ const PerformInventoryCheck = () => {
   const [openAssetModal, setOpenAssetModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
 
-  const getInitialZone = (zones) => {
-    return zones?.find(z => Number(z.status) === 0)?.id || "";
+  const scanType = getScanType(workOrder?.status);
+
+  const getInitialZone = (zones, scanType) => {
+    if (!zones) return "";
+
+    if (scanType === "firstScan") {
+      return zones.find(z => Number(z.status) === 0)?.id || "";
+    }
+
+    if (scanType === "secondScan") {
+      return zones.find(z => Number(z.status) < 2)?.id || "";
+    }
+
+    return "";
   };
 
-  const [selectedZone, setSelectedZone] = useState(getInitialZone(workOrder?.zone));
-
-  const scanType = getScanType(workOrder?.status);
+  const [selectedZone, setSelectedZone] = useState(
+    getInitialZone(workOrder?.zone, scanType)
+  );
   const allZones = workOrder?.zone || [];
 
   const visibleAssets = useMemo(() => {
@@ -385,11 +397,17 @@ const PerformInventoryCheck = () => {
                 <MenuItem
                   key={zone.id}
                   value={zone.id}
-                  disabled={isFirstScanDone}
+                  disabled={
+                    scanType === "firstScan"
+                      ? isFirstScanDone
+                      : scanType === "secondScan"
+                      ? isSecondScanDone
+                      : false
+                  }
                 >
                   {zone.id}
-                  {isFirstScanDone && " (✔)"}
-                  {isSecondScanDone && " (✔ 2nd DONE)"}
+                  {scanType === "firstScan" && isFirstScanDone && " ✔"}
+                  {scanType === "secondScan" && isSecondScanDone && " ✔"}
                 </MenuItem>
               );
             })

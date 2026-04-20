@@ -4,6 +4,7 @@ import { eamRequest } from "../lib/eamRequest.js";
 import { buildUDSRequest, UDSField } from "../lib/userDefinedScreenBuilder.js";
 import { chunkArray, sleep } from "../utils/batch.util.js";
 import { executeGrid, createFilter, mapGridRecords } from "./grid.service.js";
+import { HXGN_STATUS } from "../constants/hxgnStatus.js";
 
 const CHUNK_SIZE = 10;
 const BATCH_DELAY = 200;    // optional safety delay (ms)
@@ -18,7 +19,8 @@ function buildPayload(scan) {
     zoneCode,
     assetCode,
     assetStatus,
-    scanSeq
+    scanSeq,
+    remark
   } = scan;
 
   if (!zoneCode || !assetCode) {
@@ -35,6 +37,7 @@ function buildPayload(scan) {
       UDSField.text("ZONECODE", zoneCode),
       UDSField.text("ASSETCODE", assetCode),
       UDSField.text("ASSETSTATUS", assetStatus || ""),
+      UDSField.text("REASON", remark),
       UDSField.number("SCANSEQ", scanSeq ?? 0)
     ]
   });
@@ -114,5 +117,62 @@ export async function getWorkOrderScanStatusService({ workOrderId }, context) {
     uuid: fields.uuid,
     workOrderId: fields.workorderid,
     status: fields.workorderscanstatus
+  }));
+}
+
+export async function getWorkOrderScanAssetsService(
+  { workOrderId, scanSeq },
+  context
+) {
+  const filters = [];
+
+  if (workOrderId) {
+    filters.push(createFilter({
+      alias: "WO_CODE",
+      value: workOrderId
+    }));
+  }
+
+  if (scanSeq) {
+    filters.push(createFilter({
+      alias: "ASS_SCAN_SEQ",
+      value: scanSeq
+    }));
+  }
+
+  const raw = await executeGrid({
+    gridId: "100024",
+    gridName: "0U5005",
+    userFunctionName: "0U5005",
+    filters,
+    rowLimit: 100
+  }, context);
+
+  const records = mapGridRecords(raw);
+
+  return records.map(fields => ({
+    assetCode: fields.ass_code,
+    description: fields.ass_desc,
+    organization: fields.ass_org,
+    organizationCode: fields.ass_org_code,
+    location: fields.ass_loc,
+    department: fields.ass_dept,
+
+    zone: fields.ass_zone,
+    zoneCode: fields.ass_zone_code,
+    currentZoneCode: fields.ass_c_zone_code,
+
+    status: HXGN_STATUS[fields.ass_status],
+    scanStatus: fields.ass_scan_status,
+    scanSeq: Number(fields.ass_scan_seq),
+
+    rfidCode: fields.ass_rfid_code,
+    reason: fields.ass_reason,
+
+    commissionDate: fields.ass_commiss,
+    profilePicture: fields.ass_profile_pic,
+
+    workOrderId: fields.wo_code,
+    workOrderScanUuid: fields.wo_uuid
   }));
 }

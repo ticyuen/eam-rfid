@@ -21,3 +21,11 @@ export const saveWorkOrderScanResult = async ({
 
   return res.data;
 };
+
+export const fetchWorkOrderScanAssets = async ({ workOrderId, scanSeq }) => {
+  const res = await api.get(
+    `/work-order-scan/assets?workOrderId=${workOrderId}&scanSeq=${scanSeq}`
+  );
+
+  return res.data?.data || [];
+};

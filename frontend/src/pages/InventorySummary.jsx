@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
 import {
   Box,
@@ -12,9 +12,14 @@ import {
   MenuItem,
   Select,
   FormControl,
-  InputLabel
+  InputLabel,
+  Button,
+  TextField
 } from "@mui/material";
 
+import TagIcon from '@mui/icons-material/Tag';
+import DescriptionIcon from "@mui/icons-material/Description"; 
+import LocationOnIcon from "@mui/icons-material/LocationOn"; 
 import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
@@ -23,18 +28,32 @@ import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import AssetDetailsModal from "../components/AssetDetailsModal";
 import { useWorkOrderStore } from "../store";
 import { ASSET_SCAN_STATUS, WorkOrderStatus } from "../constants";
+import { fetchWorkOrderScanAssets, saveWorkOrderScanResult } from "../api/workOrderScan";
+import { createWorkOrderScan } from "../api/workOrder";
+import { getDeviceName } from "../utils/device";
 
 const InventorySummary = () => {
-  const navigate = useNavigate();
   const { id } = useParams();
-  const { workOrders } = useWorkOrderStore();
+  const navigate = useNavigate();
+  const { workOrders, updateStatus } = useWorkOrderStore();
 
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-  const [statusFilter, setStatusFilter] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("NON_MATCHED");
   const [selectedWOId, setSelectedWOId] = useState(id || "");
+  const [editedAssets, setEditedAssets] = useState({});
+  const [originalAssets, setOriginalAssets] = useState([]);
+  const [remarks, setRemarks] = useState({});
+  const [apiAssets, setApiAssets] = useState([]);
+  const allAssets = apiAssets;
 
   const workOrder = workOrders.find((wo) => wo?.id.toString() === selectedWOId);
+
+  const isSecondScan =
+    workOrder?.status === WorkOrderStatus.SECOND_SCAN_COMPLETED ||
+    workOrder?.status === WorkOrderStatus.SECOND_SCAN_IN_PROGRESS;
+
+  const scanSeq = isSecondScan ? 2 : 1
 
   const completedWorkOrders = workOrders.filter(
     (wo) =>
@@ -42,35 +61,65 @@ const InventorySummary = () => {
       wo.status === WorkOrderStatus.SECOND_SCAN_COMPLETED
   );
 
-  // ================================
-  // FLATTEN ALL ZONE RESULTS
-  // ================================
-  const allAssets = useMemo(() => {
-    if (!workOrder?.zoneResults) return [];
+  const reloadAssets = async () => {
+    if (!selectedWOId || !workOrder) return;
 
-    const result = [];
+    try {
+      const data = await fetchWorkOrderScanAssets({
+        workOrderId: selectedWOId,
+        scanSeq
+      });
 
-    Object.entries(workOrder.zoneResults).forEach(
-      ([zone, scans]) => {
-        Object.values(scans).forEach((scan) => {
-          (scan.assets || []).forEach((asset) => {
-            result.push({
-              ...asset,
-              zone,
-            });
-          });
-        });
-      }
+      const mapped = data.map((a, index) => ({
+        id: a.assetCode,
+
+        assetCode: a.assetCode,
+        description: a.description,
+
+        zone: a.zone,
+        zoneCode: a.zoneCode,
+        currentZoneCode: a.currentZoneCode,
+
+        rfidCode: a.rfidCode,
+        scanStatus: a.scanStatus,
+        scanSeq: a.scanSeq,
+
+        workOrderId: a.workOrderId,
+        workOrderScanUuid: a.workOrderScanUuid,
+
+        remark: a.remark || "",
+        isEdited: false
+      }));
+
+      const cloned = JSON.parse(JSON.stringify(mapped));
+
+      setApiAssets(cloned);
+      setOriginalAssets(cloned);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    reloadAssets();
+  }, [selectedWOId, workOrder?.status]);
+
+  const handleMarkAsMatched = (asset) => {
+    // Update UI immediately
+    setApiAssets((prev) =>
+      prev.map((a) =>
+        a.id === asset.id
+          ? { ...a, scanStatus: ASSET_SCAN_STATUS.MATCHED }
+          : a
+      )
     );
 
-    return result;
-  }, [workOrder]);
-
-  // useEffect(() => {
-  //   if (selectedWOId) {
-  //     navigate(`/inventory/summary/${selectedWOId}`, { replace: true });
-  //   }
-  // }, [selectedWOId]);
+    // Track change
+    setEditedAssets((prev) => ({
+      ...prev,
+      [asset.assetCode]: ASSET_SCAN_STATUS.MATCHED
+    }));
+  };
 
   const getStatusMeta = (status) => {
     switch (status) {
@@ -113,14 +162,213 @@ const InventorySummary = () => {
     }
   };
 
-  const toggleFilter = (status) => {
-    setStatusFilter((prev) => (prev === status ? null : status));
+  const handleRemarkChange = (assetCode, value) => {
+    setRemarks(prev => ({
+      ...prev,
+      [assetCode]: value
+    }));
+
+    setEditedAssets(prev => ({
+      ...prev,
+      [assetCode]: true
+    }));
   };
 
-  // FILTERED LIST
+  const handleReset = () => {
+    if (originalAssets.length === 0) return;
+
+    const confirmReset = window.confirm(
+      "Reset all changes? This will discard unsaved edits."
+    );
+
+    if (!confirmReset) return;
+
+    // restore original assets
+    setApiAssets(originalAssets);
+
+    // clear edit tracking
+    setEditedAssets({});
+
+    // IMPORTANT: clear remarks too
+    setRemarks({});
+  };
+
+  const toggleFilter = (status) => {
+    setStatusFilter((prev) =>
+      prev === status ? "NON_MATCHED" : status
+    );
+  };
+
+  const handleSaveChanges = async () => {
+    if (!selectedWOId) return;
+
+    const changedList = Object.entries(editedAssets);
+    const hasRemarkChanges = Object.keys(remarks).length > 0;
+
+    if (changedList.length === 0 && !hasRemarkChanges) {
+      alert("No changes to save");
+      return;
+    }
+
+    console.log("remarks state:", remarks);
+
+    try {
+      const changedAssetObjects = allAssets.filter((a) => {
+        return (
+          editedAssets[a.assetCode] === true ||
+          remarks[a.assetCode]?.length > 0
+        );
+      });
+
+      console.log('changedAssetObjects: ', changedAssetObjects);
+
+      if (changedAssetObjects.length === 0) return;
+
+      // 1. Get UUID (same for all)
+      const workOrderScanUuid =
+        changedAssetObjects[0]?.workOrderScanUuid;
+
+      if (!workOrderScanUuid) {
+        console.error("Missing workOrderScanUuid");
+        return;
+      }
+
+      // 2. Group assets by zone
+      const groupedByZone = changedAssetObjects.reduce((acc, asset) => {
+        const zone = asset.zoneCode;
+
+        if (!zone) return acc;
+
+        if (!acc[zone]) acc[zone] = [];
+
+        acc[zone].push({
+          assetCode: asset.assetCode,
+          assetStatus: asset.scanStatus,
+          scanSeq,
+          remark: remarks[asset.assetCode] || asset.remark || ""
+        });
+
+        return acc;
+      }, {});
+
+      // 3. Call API per zone
+      const promises = Object.entries(groupedByZone).map(
+        ([zone, assets]) =>
+          saveWorkOrderScanResult({
+            workOrderScanUUID: workOrderScanUuid,
+            zone,
+            assets
+          })
+      );
+
+      await Promise.all(promises);
+
+      // 4. Reset & reload
+      setEditedAssets({});
+      await reloadAssets();
+
+    } catch (err) {
+      console.error("Save failed:", err);
+    }
+  };
+
+  const handleStartSecondScan = async () => {
+    if (!selectedWOId) return;
+
+    try {
+      const deviceName = getDeviceName();
+
+      // 1. Call backend to update status
+      await createWorkOrderScan({
+        workOrderId: selectedWOId,
+        status: WorkOrderStatus.SECOND_SCAN_IN_PROGRESS,
+        deviceName,
+        deviceIp: null,
+        remark: ""
+      });
+
+      // 2. Update local store
+      updateStatus(selectedWOId, WorkOrderStatus.SECOND_SCAN_IN_PROGRESS);
+
+      // 3. Navigate to PerformInventoryCheck (2nd scan)
+      navigate(`/inventory/perform/${selectedWOId}`);
+
+    } catch (err) {
+      console.error("Failed to start 2nd scan:", err);
+    }
+  };
+
+  const handleSubmitFinal = async () => {
+    if (!selectedWOId) return;
+
+    try {
+      const deviceName = getDeviceName();
+
+      await createWorkOrderScan({
+        workOrderId: selectedWOId,
+        status: WorkOrderStatus.JOB_DONE,
+        deviceName,
+        deviceIp: null,
+        remark: ""
+      });
+
+      updateStatus(selectedWOId, WorkOrderStatus.JOB_DONE);
+
+      alert("Work Order submitted successfully");
+
+    } catch (err) {
+      console.error("Submit failed:", err);
+    }
+  };
+
+  const getSecondScanButtonText = () => {
+    if (!workOrder) return "Start 2nd Scan";
+
+    switch (workOrder.status) {
+      case WorkOrderStatus.SECOND_SCAN_COMPLETED:
+        return "Submit";
+
+      case WorkOrderStatus.SECOND_SCAN_IN_PROGRESS:
+        return "Continue 2nd Scan";
+
+      case WorkOrderStatus.FIRST_SCAN_COMPLETED:
+      default:
+        return "Start 2nd Scan";
+    }
+  };
+
   const filteredAssets = useMemo(() => {
-    if (!statusFilter) return allAssets;
-    return allAssets.filter((a) => a.scanStatus === statusFilter);
+    let data = allAssets;
+
+    // Default: hide MATCHED
+    if (statusFilter === "NON_MATCHED") {
+      data = data.filter(
+        (a) => a.scanStatus !== ASSET_SCAN_STATUS.MATCHED
+      );
+    }
+
+    // Specific filter (when user taps)
+    if (
+      statusFilter &&
+      statusFilter !== "NON_MATCHED"
+    ) {
+      data = data.filter(
+        (a) => a.scanStatus === statusFilter
+      );
+    }
+
+    // Always sort: NEW → MISSING → MATCHED
+    const priority = {
+      [ASSET_SCAN_STATUS.NEW]: 0,
+      [ASSET_SCAN_STATUS.MISSING]: 1,
+      [ASSET_SCAN_STATUS.MATCHED]: 2,
+    };
+
+    return [...data].sort(
+      (a, b) =>
+        (priority[a.scanStatus] ?? 99) -
+        (priority[b.scanStatus] ?? 99)
+    );
   }, [allAssets, statusFilter]);
 
   // STATS
@@ -154,8 +402,12 @@ const InventorySummary = () => {
         Inventory Summary
       </Typography>
 
+      <Typography variant="body2">
+        Work Order: {workOrder?.id}
+      </Typography>
+
       <Typography variant="body2" sx={{ mb: 2 }}>
-        WO: {workOrder?.id}
+        Work Order Status: {workOrder?.status}
       </Typography>
 
       <FormControl fullWidth size="small" sx={{ mb: 2 }}>
@@ -173,7 +425,58 @@ const InventorySummary = () => {
         </Select>
       </FormControl>
 
-      <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+      <Box sx={{ display: "flex", gap: 1 }}>
+      
+        <Button 
+          sx={{ height: 40 }}
+          fullWidth 
+          variant="outlined" 
+          color="error"
+          onClick={handleReset}
+        >
+          🔄 Reset
+        </Button>
+
+        <Button 
+          sx={{
+            height: 40,
+            // fontSize: 16,
+            // fontWeight: "bold"
+          }}
+          fullWidth 
+          variant="contained" 
+          onClick={handleSaveChanges}
+        >
+          💾 Save Changes
+        </Button>
+
+      </Box>
+
+      <Box sx={{ display: "flex", gap: 1, mt: 2, mb: 4 }}>
+        <Button 
+          sx={{
+            height: 56,
+            fontSize: 16,
+            fontWeight: "bold"
+          }}
+          fullWidth 
+          variant="contained"
+          disabled={workOrder?.status === WorkOrderStatus.SECOND_SCAN_IN_PROGRESS}
+          onClick={() => {
+            if (workOrder?.status === WorkOrderStatus.SECOND_SCAN_COMPLETED) {
+              handleSubmitFinal();
+            } else if (workOrder?.status === WorkOrderStatus.SECOND_SCAN_IN_PROGRESS) {
+              navigate(`/inventory/perform/${selectedWOId}`);
+            } else {
+              handleStartSecondScan();
+            }
+          }}
+        >
+          📡 {getSecondScanButtonText()}
+        </Button>
+      </Box>
+
+      <Box sx={{ display: "flex", gap: 1, mt: 2, mb: 2 }}>
 
         {/* MATCHED */}
         <Box
@@ -183,8 +486,7 @@ const InventorySummary = () => {
             p: 1.5,
             borderRadius: 2,
             textAlign: "center",
-            backgroundColor:
-              statusFilter === ASSET_SCAN_STATUS.MATCHED ? "#e8f5e9" : "#fff",
+            backgroundColor: statusFilter === ASSET_SCAN_STATUS.MATCHED ? "#e8f5e9" : "#fff",
             cursor: "pointer",
             boxShadow: 1,
             position: "sticky", top: 0, zIndex: 2
@@ -264,24 +566,74 @@ const InventorySummary = () => {
               <CardContent sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2 }}>
                 <Box display="flex" flexDirection="column" gap={0.5} sx={{ width: "100%" }}>
 
-                  <Typography fontWeight="bold">
-                    {asset.assetCode || "NEW ASSET"}
-                  </Typography>
+                  {/* ASSET CODE */}
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <TagIcon fontSize="small" color="action" />
+                    <Typography fontWeight="bold" fontSize={16}>
+                      {asset.assetCode || "NEW ASSET"}
+                    </Typography>
+                  </Box>
+  
+                  {/* DESCRIPTION */}
+                  <Box display="flex" alignItems="center" gap={1} sx={{ mt: 1 }}>
+                    <DescriptionIcon fontSize="small" color="action" />
+                    <Typography variant="caption" color="text.secondary">
+                      {(asset.assetCode) ? asset.description : asset.rfidCode}
+                    </Typography>
+                  </Box>
+  
+                  {/* ZONE */}
+                  <Box display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
+                    <LocationOnIcon fontSize="small" color="action" />
+                    <Typography variant="caption">
+                      {asset.zoneCode !== asset.currentZoneCode && asset.scanStatus !== ASSET_SCAN_STATUS.MATCHED && ('Original Zone: ')}{asset.zoneCode}
+                    </Typography>
+                  </Box>
 
-                  <Typography variant="caption" color="text.secondary">
-                    {asset.description || asset.rfidCode}
-                  </Typography>
+                  {asset.zoneCode !== asset.currentZoneCode && asset.scanStatus !== ASSET_SCAN_STATUS.MATCHED && (
+                    <Box display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
+                      <LocationOnIcon fontSize="small" color="error" />
+                      <Typography variant="caption" color="error" fontWeight="bold">
+                        Current Zone: {asset.currentZoneCode}
+                      </Typography>
+                    </Box>
+                  )}
 
-                  <Typography variant="caption">
-                    Zone: {asset.zone}
-                  </Typography>
+                  {/* ===== 1st SCAN MODE ===== */}
+                  {!isSecondScan &&
+                    (asset.scanStatus === ASSET_SCAN_STATUS.NEW ||
+                      asset.scanStatus === ASSET_SCAN_STATUS.MISSING) && (
+                      <Button
+                        size="small"
+                        variant="contained"
+                        sx={{ mt: 1, alignSelf: "start" }}
+                        onClick={() => handleMarkAsMatched(asset)}
+                      >
+                        ⬅️ Returned
+                      </Button>
+                  )}
+
+
+                  {/* ===== 2nd SCAN MODE ===== */}
+                  {isSecondScan && (
+                    <Box sx={{ mt: 1 }}>
+                      <Typography variant="caption">
+                        Remark:
+                      </Typography>
+                      <TextField
+                        onChange={(e) => handleRemarkChange(asset.assetCode, e.target.value)}
+                        value={remarks[asset.assetCode] || ""}
+                        size="small"
+                        fullWidth
+                      />
+                    </Box>
+                  )}
 
                   <Chip
                     icon={getStatusMeta(asset.scanStatus).icon}
                     label={getStatusMeta(asset.scanStatus).label}
                     size="small"
                     sx={{
-                      mt: 1,
                       alignSelf: "start",
                       backgroundColor: getStatusMeta(asset.scanStatus).bg,
                       color: getStatusMeta(asset.scanStatus).color,
