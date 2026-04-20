@@ -73,8 +73,6 @@ export async function executeGrid({
     rowLimit,
     cursorPosition
   });
-  console.log("Grid Payload: ", payload)
-
   const res = await safeRequest(
     eamClient.post("/grids", payload, eamRequest(context))
   );

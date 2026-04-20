@@ -1,10 +1,14 @@
+import { ZONE_STATUS } from "../constants/zoneStatus";
 import api from "./axios";
 
 export const mapWorkOrders = (data) => {
   return data.map((wo) => ({
     id: wo.id,
     description: wo.description,
-    zone: wo.zone,
+    zone: wo.zone.map((z) => ({
+      id: z.id,
+      status: Number(z.status) || 0
+    })),
     PM: wo.pm || "",
     startDate: wo.startDate,
     endDate: wo.endDate,

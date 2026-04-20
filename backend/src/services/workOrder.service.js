@@ -5,6 +5,7 @@ import { eamClient } from "../lib/axios.js";
 import { eamRequest } from "../lib/eamRequest.js";
 import { safeRequest } from "../utils/httpClient.js";
 import { v4 as uuidv4 } from "uuid";
+import { buildUDSRequest, UDSField } from "../lib/userDefinedScreenBuilder.js";
 
 function transformWorkOrders(records) {
   const grouped = {};
@@ -27,8 +28,11 @@ function transformWorkOrders(records) {
     }
 
     // Push zone_id into location array (avoid duplicates)
-    if (fields.wo_zone_id && !grouped[id].zone.includes(fields.wo_zone_id)) {
-      grouped[id].zone.push(fields.wo_zone_id);
+    if (fields.wo_zone_code && !grouped[id].zone.includes(fields.wo_zone_code)) {
+      grouped[id].zone.push({
+        id: fields.wo_zone_code,
+        status: fields.wo_zone_status
+      });
     }
   }
 
@@ -84,10 +88,17 @@ export async function getWorkOrdersService(filtersInput, context) {
     }));
   }
 
+  if (status) {
+    filters.push(createFilter({
+      alias: "WO_STATUS",
+      value: status
+    }));
+  }
+
   const raw = await executeGrid({
-    gridId: "100019",
-    gridName: "0U5002",
-    userFunctionName: "0U5002",
+    gridId: "100022",
+    gridName: "0U5004",
+    userFunctionName: "0U5004",
     filters,
     rowLimit: 100
   }, context);
@@ -106,50 +117,18 @@ export async function addWorkOrderScanService(payload, context) {
     remark
   } = payload;
 
-  const requestBody = {
-    USERDEFINEDSCREENNAME: "UUWOSC",
-    USERDEFINEDSERVICEACTION: "ADD",
-    USERDEFINEDSCREENFIELDVALUELIST: {
-      USERDEFINEDSCREENFIELDVALUEPAIR: [
-        {
-          USERDEFINEDSCREENFIELDNAME: "UUID",
-          USERDEFINEDSCREENFIELDVALUE: {
-            TEXTDATA: uuidv4().toUpperCase()
-          }
-        },
-        {
-          USERDEFINEDSCREENFIELDNAME: "WORKORDERID",
-          USERDEFINEDSCREENFIELDVALUE: {
-            TEXTDATA: String(workOrderId)
-          }
-        },
-        {
-          USERDEFINEDSCREENFIELDNAME: "WORKORDERSCANSTATUS",
-          USERDEFINEDSCREENFIELDVALUE: {
-            TEXTDATA: status
-          }
-        },
-        {
-          USERDEFINEDSCREENFIELDNAME: "DEVICENAME",
-          USERDEFINEDSCREENFIELDVALUE: {
-            TEXTDATA: deviceName || ""
-          }
-        },
-        {
-          USERDEFINEDSCREENFIELDNAME: "DEVICEIP",
-          USERDEFINEDSCREENFIELDVALUE: {
-            TEXTDATA: deviceIp || ""
-          }
-        },
-        {
-          USERDEFINEDSCREENFIELDNAME: "REMARK",
-          USERDEFINEDSCREENFIELDVALUE: {
-            TEXTDATA: remark || ""
-          }
-        }
-      ]
-    }
-  };
+  const requestBody = buildUDSRequest({
+    screenName: "UUWOSC",
+    action: "ADD",
+    fields: [
+      UDSField.uuid("UUID"),
+      UDSField.text("WORKORDERID", String(workOrderId)),
+      UDSField.text("WORKORDERSCANSTATUS", status),
+      UDSField.text("DEVICENAME", deviceName || ""),
+      UDSField.text("DEVICEIP", deviceIp || ""),
+      UDSField.text("REMARK", remark || "")
+    ]
+  });
 
   const res = await safeRequest(
     eamClient.post(

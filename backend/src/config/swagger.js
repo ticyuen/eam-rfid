@@ -10,7 +10,6 @@ export const swaggerSetup = [
   customSiteTitle: "EAM RFID API",
     swaggerOptions: {
       persistAuthorization: true,
-      docExpansion: "none",
       displayRequestDuration: true
     }
   })

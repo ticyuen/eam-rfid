@@ -21,11 +21,7 @@ const RfidScanModal = ({ open, onClose, onProcess }) => {
   const inputRef = useRef(null);
   useEffect(() => {
     if (open) {
-      const interval = setInterval(() => {
-        inputRef.current?.focus();
-      }, 500);
-
-      return () => clearInterval(interval);
+      inputRef.current?.focus();
     }
   }, [open]);
 

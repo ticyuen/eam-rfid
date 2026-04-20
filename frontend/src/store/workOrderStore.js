@@ -8,6 +8,7 @@ const useWorkOrderStore = create(
   persist(
     (set, get) => ({
       workOrders: [],
+      workOrderScanMap: {}, // workOrderId -> workOrderScanUUID
       isLoaded: false, // prevent duplicate calls
 
       setWorkOrders: (orders) =>
@@ -15,6 +16,16 @@ const useWorkOrderStore = create(
           workOrders: orders,
           isLoaded: true,
         }),
+
+      setWorkOrderScanUUID: (workOrderId, uuid) =>
+        set((state) => ({
+          workOrderScanMap: {
+            ...state.workOrderScanMap,
+            [workOrderId]: uuid
+          }
+        })),
+
+      getWorkOrderScanUUID: (workOrderId) => get().workOrderScanMap?.[workOrderId],
 
       fetchWorkOrders: async () => {
         const { token } = useAuthStore.getState();
@@ -46,6 +57,30 @@ const useWorkOrderStore = create(
               ? { ...wo, status }
               : wo
           ),
+        })),
+
+      updateZoneStatus: (workOrderId, zoneId, scanType) =>
+        set((state) => ({
+          workOrders: state.workOrders.map((wo) => {
+            if (wo.id !== workOrderId) return wo;
+
+            return {
+              ...wo,
+              zone: wo.zone.map((z) => {
+                if (z.id !== zoneId) return z;
+
+                let newStatus = Number(z.status) || 0;
+
+                if (scanType === "firstScan") newStatus = 1;
+                if (scanType === "secondScan") newStatus = 2;
+
+                return {
+                  ...z,
+                  status: newStatus,
+                };
+              }),
+            };
+          }),
         })),
 
       completeZoneScan: (workOrderId, zone, scanType, assets) =>
@@ -80,7 +115,8 @@ const useWorkOrderStore = create(
     {
       name: "work-order-storage",
       partialize: (state) => ({
-        workOrders: state.workOrders
+        workOrders: state.workOrders,
+        workOrderScanMap: state.workOrderScanMap,
       })
     }
   )

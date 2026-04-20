@@ -8,11 +8,12 @@ export const getWorkOrders = asyncHandler(async (req, res) => {
     location,
     fromDate,
     toDate,
-    workOrderCode
+    workOrderCode,
+    status
   } = req.body;
 
   const data = await getWorkOrdersService(
-    { org, location, fromDate, toDate, workOrderCode },
+    { org, location, fromDate, toDate, workOrderCode, status },
     req.context
   );
 

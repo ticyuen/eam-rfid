@@ -17,14 +17,18 @@ import { useWorkOrderStore } from "../store";
 import { formatLocalDateTime } from "../utils/dateFormatter";
 import { WorkOrderStatus } from "../constants";
 import { createWorkOrderScan } from "../api/workOrder";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getDeviceName } from "../utils/device";
 
 const WorkOrder = () => {
   const navigate = useNavigate();
-  const { workOrders, updateStatus } = useWorkOrderStore();
+  const { workOrders, updateStatus, setWorkOrderScanUUID, fetchWorkOrders } = useWorkOrderStore();
 
   const [loadingId, setLoadingId] = useState(null);
+
+  useEffect(() => {
+    fetchWorkOrders();
+  }, []);
 
   const handleAction = async (wo) => {
     switch (wo.status) {
@@ -33,7 +37,7 @@ const WorkOrder = () => {
           setLoadingId(wo.id);
 
           const deviceName = getDeviceName();
-          await createWorkOrderScan({
+          const res = await createWorkOrderScan({
             workOrderId: wo.id,
             status: WorkOrderStatus.FIRST_SCAN_IN_PROGRESS,
             deviceName,
@@ -41,9 +45,11 @@ const WorkOrder = () => {
             remark: ""
           });
 
+          const uuid = res?.data?.uuid;
+
+          setWorkOrderScanUUID(wo.id, uuid);
           updateStatus(wo.id, WorkOrderStatus.FIRST_SCAN_IN_PROGRESS);
           navigate(`/inventory/perform/${wo.id}`);
-
         } catch (err) {
           console.error(err);
         } finally {
@@ -98,18 +104,13 @@ const WorkOrder = () => {
       <RadioButtonUncheckedIcon color="disabled" fontSize="small" />
     );
 
-  const getScanStatus = (status) => {
-    const firstScanDone =
-      status === WorkOrderStatus.FIRST_SCAN_COMPLETED ||
-      status === WorkOrderStatus.SECOND_SCAN_IN_PROGRESS ||
-      status === WorkOrderStatus.SECOND_SCAN_COMPLETED ||
-      status === WorkOrderStatus.JOB_DONE;
+  const getZoneScanStatus = (zoneStatus) => {
+    const status = Number(zoneStatus);
 
-    const secondScanDone =
-      status === WorkOrderStatus.SECOND_SCAN_COMPLETED ||
-      status === WorkOrderStatus.JOB_DONE;
-
-    return { firstScanDone, secondScanDone };
+    return {
+      firstScanDone: status >= 1,
+      secondScanDone: status >= 2,
+    };
   };
 
   const getCardColor = (status) => {
@@ -125,8 +126,7 @@ const WorkOrder = () => {
       </Typography>
 
       <Stack spacing={2}>
-        {workOrders.map((wo) => {
-          const { firstScanDone, secondScanDone } = getScanStatus(wo.status);
+        {workOrders.map((wo) => {;
           const formatted = formatLocalDateTime(wo.startDate);
 
           return (
@@ -179,23 +179,29 @@ const WorkOrder = () => {
                   Zones
                 </Typography>
 
-                {wo.zone?.map((loc) => (
-                  <Box
-                    key={loc}
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      mt: 1
-                    }}
-                  >
-                    <Typography variant="body2">{loc}</Typography>
+                {wo.zone?.map((zone, idx) => {
+                  const { firstScanDone, secondScanDone } = getZoneScanStatus(zone.status);
 
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      {renderScanIcon(firstScanDone)}
-                      {renderScanIcon(secondScanDone)}
+                  return (
+                    <Box
+                      key={`${zone.id}-${idx}`}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mt: 1
+                      }}
+                    >
+                      <Typography variant="body2">
+                        {zone.id}
+                      </Typography>
+
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        {renderScanIcon(firstScanDone)}
+                        {renderScanIcon(secondScanDone)}
+                      </Box>
                     </Box>
-                  </Box>
-                ))}
+                  );
+                })}
 
                 <Divider sx={{ mt: 2 }} />
 

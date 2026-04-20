@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import {
   Box,
@@ -8,7 +8,11 @@ import {
   CardContent,
   IconButton,
   Chip,
-  Stack
+  Stack,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
@@ -18,19 +22,25 @@ import NewReleasesIcon from "@mui/icons-material/NewReleases";
 
 import AssetDetailsModal from "../components/AssetDetailsModal";
 import { useWorkOrderStore } from "../store";
-import { ASSET_SCAN_STATUS } from "../constants";
+import { ASSET_SCAN_STATUS, WorkOrderStatus } from "../constants";
 
 const InventorySummary = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const { workOrders } = useWorkOrderStore();
-
-  const workOrder = workOrders.find(
-    (wo) => wo.id.toString() === id
-  );
 
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
+  const [selectedWOId, setSelectedWOId] = useState(id || "");
+
+  const workOrder = workOrders.find((wo) => wo?.id.toString() === selectedWOId);
+
+  const completedWorkOrders = workOrders.filter(
+    (wo) =>
+      wo.status === WorkOrderStatus.FIRST_SCAN_COMPLETED ||
+      wo.status === WorkOrderStatus.SECOND_SCAN_COMPLETED
+  );
 
   // ================================
   // FLATTEN ALL ZONE RESULTS
@@ -56,9 +66,12 @@ const InventorySummary = () => {
     return result;
   }, [workOrder]);
 
-  // ================================
-  // STATUS META (same as Perform page)
-  // ================================
+  // useEffect(() => {
+  //   if (selectedWOId) {
+  //     navigate(`/inventory/summary/${selectedWOId}`, { replace: true });
+  //   }
+  // }, [selectedWOId]);
+
   const getStatusMeta = (status) => {
     switch (status) {
       case ASSET_SCAN_STATUS.MATCHED:
@@ -68,7 +81,6 @@ const InventorySummary = () => {
           icon: <CheckCircleIcon fontSize="small" />,
           label: "Matched"
         };
-
       case ASSET_SCAN_STATUS.MISSING:
         return {
           color: "#ed6c02",
@@ -76,7 +88,6 @@ const InventorySummary = () => {
           icon: <WarningAmberIcon fontSize="small" />,
           label: "Missing"
         };
-
       case ASSET_SCAN_STATUS.NEW:
         return {
           color: "#d32f2f",
@@ -84,50 +95,57 @@ const InventorySummary = () => {
           icon: <NewReleasesIcon fontSize="small" />,
           label: "New"
         };
-
       default:
-        return {
-          color: "#999",
-          bg: "#f5f5f5",
-          icon: null,
-          label: "Unknown"
-        };
+        return {};
     }
   };
 
-  // ================================
+  const getCardColor = (status) => {
+    switch (status) {
+      case ASSET_SCAN_STATUS.MATCHED:
+        return "#fafffa";
+      case ASSET_SCAN_STATUS.MISSING:
+        return "#fcf9f5";
+      case ASSET_SCAN_STATUS.NEW:
+        return "#fff9f8";
+      default:
+        return "#ffffff";
+    }
+  };
+
+  const toggleFilter = (status) => {
+    setStatusFilter((prev) => (prev === status ? null : status));
+  };
+
   // FILTERED LIST
-  // ================================
   const filteredAssets = useMemo(() => {
     if (!statusFilter) return allAssets;
-    return allAssets.filter((a) => a.status === statusFilter);
+    return allAssets.filter((a) => a.scanStatus === statusFilter);
   }, [allAssets, statusFilter]);
 
-  // ================================
   // STATS
-  // ================================
   const stats = useMemo(() => {
     const total = allAssets.length;
     const matched = allAssets.filter(
-      (a) => a.status === ASSET_SCAN_STATUS.MATCHED
+      (a) => a.scanStatus === ASSET_SCAN_STATUS.MATCHED
     ).length;
     const missing = allAssets.filter(
-      (a) => a.status === ASSET_SCAN_STATUS.MISSING
+      (a) => a.scanStatus === ASSET_SCAN_STATUS.MISSING
     ).length;
     const newCount = allAssets.filter(
-      (a) => a.status === ASSET_SCAN_STATUS.NEW
+      (a) => a.scanStatus === ASSET_SCAN_STATUS.NEW
     ).length;
 
     return { total, matched, missing, newCount };
   }, [allAssets]);
 
-  if (!workOrder) {
-    return (
-      <Typography sx={{ p: 2 }}>
-        Work order not found
-      </Typography>
-    );
-  }
+  // if (!workOrder) {
+  //   return (
+  //     <Typography sx={{ p: 2 }}>
+  //       Work order not found
+  //     </Typography>
+  //   );
+  // }
 
   return (
     <Box sx={{ p: 1 }}>
@@ -137,84 +155,88 @@ const InventorySummary = () => {
       </Typography>
 
       <Typography variant="body2" sx={{ mb: 2 }}>
-        WO: {workOrder.id}
+        WO: {workOrder?.id}
       </Typography>
 
-      {/* ================= STATS ================= */}
-      <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-        <Chip label={`Total: ${stats.total}`} />
-        <Chip
-          label={`Matched: ${stats.matched}`}
-          color="success"
-        />
-        <Chip
-          label={`Missing: ${stats.missing}`}
-          color="warning"
-        />
-        <Chip label={`New: ${stats.newCount}`} color="error" />
-      </Stack>
+      <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+        <InputLabel>Work Order</InputLabel>
+        <Select
+          value={selectedWOId}
+          label="Work Order"
+          onChange={(e) => setSelectedWOId(e.target.value)}
+        >
+          {completedWorkOrders.map((wo) => (
+            <MenuItem key={wo.id} value={wo.id}>
+              {wo.id} - {wo.status}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
-      {/* ================= FILTERS ================= */}
-      <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-        <Chip
-          label="All"
-          clickable
-          onClick={() => setStatusFilter(null)}
-          variant={!statusFilter ? "filled" : "outlined"}
-        />
+      <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
 
-        <Chip
-          label="Matched"
-          color="success"
-          clickable
-          onClick={() =>
-            setStatusFilter((p) =>
-              p === ASSET_SCAN_STATUS.MATCHED
-                ? null
-                : ASSET_SCAN_STATUS.MATCHED
-            )
-          }
-          variant={
-            statusFilter === ASSET_SCAN_STATUS.MATCHED
-              ? "filled"
-              : "outlined"
-          }
-        />
+        {/* MATCHED */}
+        <Box
+          onClick={() => toggleFilter(ASSET_SCAN_STATUS.MATCHED)}
+          sx={{
+            flex: 1,
+            p: 1.5,
+            borderRadius: 2,
+            textAlign: "center",
+            backgroundColor:
+              statusFilter === ASSET_SCAN_STATUS.MATCHED ? "#e8f5e9" : "#fff",
+            cursor: "pointer",
+            boxShadow: 1,
+            position: "sticky", top: 0, zIndex: 2
+          }}
+        >
+          <Typography variant="caption">Matched</Typography>
+          <Typography fontWeight="bold" color="success.main">
+            {stats.matched}
+          </Typography>
+        </Box>
 
-        <Chip
-          label="Missing"
-          color="warning"
-          clickable
-          onClick={() =>
-            setStatusFilter((p) =>
-              p === ASSET_SCAN_STATUS.MISSING
-                ? null
-                : ASSET_SCAN_STATUS.MISSING
-            )
-          }
-          variant={
-            statusFilter === ASSET_SCAN_STATUS.MISSING
-              ? "filled"
-              : "outlined"
-          }
-        />
+        {/* MISSING */}
+        <Box
+          onClick={() => toggleFilter(ASSET_SCAN_STATUS.MISSING)}
+          sx={{
+            flex: 1,
+            p: 1.5,
+            borderRadius: 2,
+            textAlign: "center",
+            backgroundColor:
+              statusFilter === ASSET_SCAN_STATUS.MISSING ? "#fff3e0" : "#fff",
+            cursor: "pointer",
+            boxShadow: 1
+          }}
+        >
+          <Typography variant="caption">Missing</Typography>
+          <Typography fontWeight="bold" color="warning.main">
+            {stats.missing}
+          </Typography>
+        </Box>
 
-        <Chip
-          label="New"
-          color="error"
-          clickable
-          onClick={() =>
-            setStatusFilter((p) =>
-              p === ASSET_SCAN_STATUS.NEW ? null : ASSET_SCAN_STATUS.NEW
-            )
-          }
-          variant={
-            statusFilter === ASSET_SCAN_STATUS.NEW
-              ? "filled"
-              : "outlined"
-          }
-        />
-      </Stack>
+        {/* NEW */}
+        <Box
+          onClick={() => toggleFilter(ASSET_SCAN_STATUS.NEW)}
+          sx={{
+            flex: 1,
+            p: 1.5,
+            borderRadius: 2,
+            textAlign: "center",
+            backgroundColor:
+              statusFilter === ASSET_SCAN_STATUS.NEW ? "#fdecea" : "#fff",
+            cursor: "pointer",
+            boxShadow: 1
+          }}
+        >
+          <Typography variant="caption">New</Typography>
+          <Typography fontWeight="bold" color="error.main">
+            {stats.newCount}
+          </Typography>
+        </Box>
+
+      </Box>
 
       {/* ================= CARDS ================= */}
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -223,67 +245,55 @@ const InventorySummary = () => {
         )}
 
         {filteredAssets.map((asset) => {
-          const meta = getStatusMeta(asset.scanStatus);
-
           return (
             <Card
               key={asset.id}
               sx={{
                 borderRadius: 3,
-                boxShadow: 2,
-                borderLeft: `6px solid ${meta.color}`,
-                backgroundColor: meta.bg,
-                transition: "0.2s",
+                background: "#fff",
+                boxShadow: 3,
+                borderLeft: `6px solid ${getStatusMeta(asset.scanStatus).color}`,
+                backgroundColor: getCardColor(asset.scanStatus),
+                transition: "all 0.25s ease",
                 "&:hover": {
                   transform: "translateY(-2px)",
                   boxShadow: 4
                 }
               }}
             >
-              <CardContent
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center"
-                }}
-              >
-                {/* LEFT */}
-                <Box>
+              <CardContent sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", p: 2 }}>
+                <Box display="flex" flexDirection="column" gap={0.5} sx={{ width: "100%" }}>
+
                   <Typography fontWeight="bold">
-                    {asset.description}
+                    {asset.assetCode || "NEW ASSET"}
                   </Typography>
 
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                  >
-                    {asset.assetCode} • {asset.zone}
+                  <Typography variant="caption" color="text.secondary">
+                    {asset.description || asset.rfidCode}
+                  </Typography>
+
+                  <Typography variant="caption">
+                    Zone: {asset.zone}
                   </Typography>
 
                   <Chip
-                    icon={meta.icon}
-                    label={meta.label}
+                    icon={getStatusMeta(asset.scanStatus).icon}
+                    label={getStatusMeta(asset.scanStatus).label}
                     size="small"
                     sx={{
                       mt: 1,
-                      backgroundColor: meta.bg,
-                      color: meta.color,
+                      alignSelf: "start",
+                      backgroundColor: getStatusMeta(asset.scanStatus).bg,
+                      color: getStatusMeta(asset.scanStatus).color,
                       fontWeight: 600
                     }}
                   />
                 </Box>
 
-                {/* RIGHT ACTION */}
-                <IconButton
-                  onClick={() => {
-                    setSelectedAsset(asset);
-                    setOpenModal(true);
-                  }}
-                  sx={{
-                    backgroundColor: "#f5f5f5",
-                    "&:hover": { backgroundColor: "#e0e0e0" }
-                  }}
-                >
+                <IconButton onClick={() => {
+                  setSelectedAsset(asset);
+                  setOpenModal(true);
+                }}>
                   <SearchIcon />
                 </IconButton>
               </CardContent>

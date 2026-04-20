@@ -1,5 +1,35 @@
 import { ASSET_SCAN_STATUS } from "../constants";
 
+export async function processRFIDScanWithBackend({
+  existingTableData,
+  scannedCodes,
+  selectedZone,
+  scanAssetsByRfid
+}) {
+  // 1. Local processing (fast UI feedback)
+  let updated = processRFIDScan(
+    existingTableData,
+    scannedCodes,
+    selectedZone
+  );
+
+  try {
+    // 2. Backend validation
+    const resolvedAssets = await scanAssetsByRfid(scannedCodes);
+
+    // 3. Merge backend truth
+    updated = mergeBackendAssets(
+      updated,
+      resolvedAssets,
+      selectedZone
+    );
+  } catch (err) {
+    console.error("RFID resolve failed:", err);
+  }
+
+  return updated;
+}
+
 export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
 
   console.log('existingTableData: ', existingTableData);
@@ -28,7 +58,7 @@ export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
 
       // If scanned now → upgrade to MATCHED
       if (scannedSet.has(code)) {
-        return { ...asset, status: ASSET_SCAN_STATUS.MATCHED };
+        return { ...asset, scanStatus: ASSET_SCAN_STATUS.MATCHED };
       }
 
       // Otherwise DO NOT downgrade
@@ -54,11 +84,7 @@ export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
     .map(code => ({
       id: `new-${code}-${selectedZone}`,
       rfidCode: code,
-      description: "-",
-      parentAsset: "-",
-      parentDescription: "-",
-      lastUpdated: new Date().toISOString(),
-      status: ASSET_SCAN_STATUS.NEW
+      scanStatus: ASSET_SCAN_STATUS.NEW
     }));
 
   console.log('updatedExistingAssets: ', updatedExistingAssets);
@@ -71,3 +97,62 @@ export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
     ...newlyDetectedAssets
   ];
 }
+
+/**
+ * Merge backend-resolved assets into existing table
+ */
+export function mergeBackendAssets(
+  existingTableData,
+  resolvedAssets,
+  selectedZone
+) {
+  const existingMap = new Map(
+    existingTableData.map((a) => [
+      a.rfidCode?.trim().toUpperCase(),
+      a
+    ])
+  );
+
+  const merged = [...existingTableData];
+
+  resolvedAssets.forEach((asset) => {
+    const code = asset.rfidCode?.trim().toUpperCase();
+
+    const mapped = {
+      ...asset,
+      id: `${asset.assetCode}-${asset.zone}`,
+      scanStatus:
+        asset.zone === selectedZone
+          ? ASSET_SCAN_STATUS.MATCHED
+          : ASSET_SCAN_STATUS.NEW,
+    };
+
+    if (existingMap.has(code)) {
+      const idx = merged.findIndex(
+        (a) => a.rfidCode?.trim().toUpperCase() === code
+      );
+      merged[idx] = mapped;
+    } else {
+      merged.push(mapped);
+    }
+  });
+
+  return merged;
+}
+
+// export const mapAssets = (data, zone) => {
+//   return data.map((a) => ({
+//     id: `new-${code}-${selectedZone}`,
+//     assetCode: a.assetCode,
+//     description: a.description,
+//     zone: a.zone,
+//     organization: a.organizationDescription,
+//     location: a.location,
+//     department: a.department,
+//     commissionDate: a.commissionDate,
+//     status: a.status,
+//     profilePicture: a.profilePicture || null,
+//     rfidCode: a.rfidCode,
+//     scanStatus: "MISSING" // default before scan
+//   }));
+// };

@@ -30,6 +30,9 @@ paths:
                   type: string
                 password:
                   type: string
+              example:
+                username: "TEST"
+                password: "asd"
       responses:
         200:
           description: Success
@@ -482,3 +485,133 @@ paths:
           description: Unauthorized
         500:
           description: Internal server error
+
+  /api/work-order-scan/{workOrderScanUuid}/zone/{zoneCode}/save-result:
+    post:
+      tags:
+        - Work Order Scan
+      summary: Save work order scan result
+      description: Save single or batch scan results for a work order scan session and zone
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: path
+          name: workOrderScanUuid
+          required: true
+          schema:
+            type: string
+          example: 401ed05f-d696-40d3-a8f1-40ed5b1f65b0
+          
+        - in: query
+          name: locationId
+          schema:
+            type: string
+          example: S686
+
+        - in: path
+          name: zoneCode
+          required: true
+          schema:
+            type: string
+          example: PANTRY
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                assets:
+                  type: array
+                  description: Batch scan payload (recommended)
+                  items:
+                    type: object
+                    properties:
+                      assetCode:
+                        type: string
+                      assetStatus:
+                        type: string
+                      scanSeq:
+                        type: integer
+              example:
+                assets:
+                  - assetCode: "FF25001/HQ"
+                    assetStatus: "MATCHED"
+                    scanSeq: 1
+                  - assetCode: "FF25003/HQ"
+                    assetStatus: "MISSING"
+                    scanSeq: 2
+
+      responses:
+        200:
+          description: Scan(s) processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      success:
+                        type: integer
+                      failed:
+                        type: integer
+
+  /api/work-order-scan/status:
+    get:
+      tags:
+        - Work Order Scan
+      summary: Get work order scan status
+      description: |
+        Fetch scan status details for a specific work order ID using HXGN Grid 0U5003.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: workOrderId
+          required: true
+          schema:
+            type: string
+          description: Work order ID to fetch scan status
+          example: "30085"
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        uuid:
+                          type: string
+                          example: "BDC8F595-8FA6-4D1A-8E66-B8BC83CB3B71"
+                        workOrderId:
+                          type: string
+                          example: "30085"
+                        status:
+                          type: string
+                          example: "1st Scan - In Progress"
+        400:
+          description: Bad request
+        401:
+          description: Unauthorized
+        500:
+          description: Server error

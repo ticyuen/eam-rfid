@@ -12,13 +12,10 @@ import { useNavigate } from "react-router-dom";
 import Logo from "../assets/logo.png";
 import api from "../api/axios";
 
-import { useWorkOrderStore } from "../store";
-
 export default function Login() {
   const navigate = useNavigate()
   const login = useAuthStore((state) => state.login);
   const showSnackbar = useUIStore((state) =>state.showSnackbar);
-  const fetchWorkOrders = useWorkOrderStore((s) => s.fetchWorkOrders);
 
   const [username, setUsername] = useState("TEST");
   const [password, setPassword] = useState("asd");
@@ -62,14 +59,12 @@ export default function Login() {
 
       login(data?.token, user);
 
-      await fetchWorkOrders();
-
       navigate("/work-orders", { replace: true });
     } catch (err) {
       console.error("Login error:", err);
 
       // Handle different error types
-      if (err?.status === 401) {
+      if (err?.response?.status === 401 || err?.response?.status === 404) {
         showSnackbar("Invalid username or password","error");
       } else if (err?.message) {
         showSnackbar(`Login Error: ${err?.message}`,"error");
