@@ -22,6 +22,47 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 
+const getCardColor = (status) => {
+  switch (status) {
+    case ASSET_SCAN_STATUS.MATCHED:
+      return "#fafffa"; // soft green
+    case ASSET_SCAN_STATUS.MISSING:
+      return "#fcf9f5"; // soft amber
+    case ASSET_SCAN_STATUS.NEW:
+      return "#fff9f8"; // soft red
+    default:
+      return "#ffffff";
+  }
+};
+
+const getStatusMeta = (status) => {
+  switch (status) {
+    case ASSET_SCAN_STATUS.MATCHED:
+      return {
+        color: "#2e7d32",
+        bg: "#e8f5e9",
+        icon: <CheckCircleIcon fontSize="small" />,
+        label: "Matched"
+      };
+    case ASSET_SCAN_STATUS.MISSING:
+      return {
+        color: "#ed6c02",
+        bg: "#fff3e0",
+        icon: <WarningAmberIcon fontSize="small" />,
+        label: "Missing"
+      };
+    case ASSET_SCAN_STATUS.NEW:
+      return {
+        color: "#d32f2f",
+        bg: "#fdecea",
+        icon: <NewReleasesIcon fontSize="small" />,
+        label: "New"
+      };
+    default:
+      return {};
+  }
+};
+
 const getScanType = (status) => {
   if (status === WorkOrderStatus.FIRST_SCAN_IN_PROGRESS) return "firstScan";
   if (status === WorkOrderStatus.SECOND_SCAN_IN_PROGRESS) return "secondScan";
@@ -257,20 +298,6 @@ const PerformInventoryCheck = () => {
 
       updateZoneStatus(currentWO.id, selectedZone, scanType);
 
-      // const updated = {
-      //   ...currentWO,
-      //   zoneResults: {
-      //     ...currentWO.zoneResults,
-      //     [selectedZone]: {
-      //       ...currentWO.zoneResults?.[selectedZone],
-      //       [scanType]: {
-      //         completed: true,
-      //         assets: tableData,
-      //       },
-      //     },
-      //   },
-      // };
-
       const updatedWO = useWorkOrderStore.getState().workOrders.find(
         (wo) => wo.id === currentWO.id
       );
@@ -316,47 +343,6 @@ const PerformInventoryCheck = () => {
 
     } catch (err) {
       console.error("Save result failed:", err);
-    }
-  };
-
-  const getCardColor = (status) => {
-    switch (status) {
-      case ASSET_SCAN_STATUS.MATCHED:
-        return "#fafffa"; // soft green
-      case ASSET_SCAN_STATUS.MISSING:
-        return "#fcf9f5"; // soft amber
-      case ASSET_SCAN_STATUS.NEW:
-        return "#fff9f8"; // soft red
-      default:
-        return "#ffffff";
-    }
-  };
-  
-  const getStatusMeta = (status) => {
-    switch (status) {
-      case ASSET_SCAN_STATUS.MATCHED:
-        return {
-          color: "#2e7d32",
-          bg: "#e8f5e9",
-          icon: <CheckCircleIcon fontSize="small" />,
-          label: "Matched"
-        };
-      case ASSET_SCAN_STATUS.MISSING:
-        return {
-          color: "#ed6c02",
-          bg: "#fff3e0",
-          icon: <WarningAmberIcon fontSize="small" />,
-          label: "Missing"
-        };
-      case ASSET_SCAN_STATUS.NEW:
-        return {
-          color: "#d32f2f",
-          bg: "#fdecea",
-          icon: <NewReleasesIcon fontSize="small" />,
-          label: "New"
-        };
-      default:
-        return {};
     }
   };
 

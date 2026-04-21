@@ -16,6 +16,7 @@ export const fetchAssetsByZone = async (zone) => {
 };
 
 export const mapAssets = (data, zone) => {
+  console.log('mapAssets: ', data);
   return data.map((a) => ({
     id: `${a.assetCode}-${zone}`,
     assetCode: a.assetCode,
@@ -37,5 +38,10 @@ export const scanAssetsByRfid = async (rfidCodes) => {
     rfidCodes,
   });
 
+  return res.data?.data || [];
+};
+
+export const fetchAssetMetadata = async () => {
+  const res = await api.get("/asset/metadata");
   return res.data?.data || [];
 };

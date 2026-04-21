@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
-import { getAssetService, scanAssetsByRFIDService, searchAssetsService } from "../services/asset.service.js";
+import { getAssetMetadataService, getAssetService, scanAssetsByRFIDService, searchAssetsService } from "../services/asset.service.js";
 import { getDocumentService } from "../services/document.service.js";
 
 export const getAsset = asyncHandler(async (req, res) => {
@@ -103,4 +103,10 @@ export const scanAssetsByRFID = asyncHandler(async (req, res) => {
     data: result.assets,
     message: ""
   }));
+});
+
+export const getAssetMetadata = asyncHandler(async (req, res) => {
+  const data = await getAssetMetadataService(req.context);
+
+  res.json(new ApiResponse({ data }));
 });

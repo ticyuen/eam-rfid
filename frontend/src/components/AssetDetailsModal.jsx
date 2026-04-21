@@ -20,7 +20,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
 import { useTheme } from "@mui/material/styles";
 
-import AssetImage from "../assets/react.svg"
+import AssetImage from "../assets/c_logo.jpg";
 
 export default function AssetDetailsModal({ open, onClose, asset }) {
 
@@ -31,6 +31,7 @@ export default function AssetDetailsModal({ open, onClose, asset }) {
   const [loadingImage, setLoadingImage] = useState(false);
 
   useEffect(() => {
+    console.log('asst: ', asset)
     const loadImage = async () => {
       if (!asset?.profilePicture) {
         setImageSrc(null);
@@ -73,7 +74,7 @@ export default function AssetDetailsModal({ open, onClose, asset }) {
     >
 
       {/* HEADER */}
-      <DialogTitle sx={{ display:"flex", justifyContent:"space-between", backgroundColor: "#f5f5f5", p: 3 }}>
+      <DialogTitle sx={{ display:"flex", justifyContent:"space-between", backgroundColor: "#f5f5f5", p: 3, paddingBottom: 2 }}>
         <Typography variant="h5" component="span" sx={{ alignItems: 'center' }}>
           Asset Details
         </Typography>
@@ -152,7 +153,7 @@ export default function AssetDetailsModal({ open, onClose, asset }) {
         </Accordion>
 
         {/* MANUFACTURER */}
-        <Accordion style={{ marginBottom: 1, marginTop: 0 }}>
+        {/* <Accordion style={{ marginBottom: 1, marginTop: 0 }}>
           <AccordionSummary style={{ minHeight: 50 }} expandIcon={<ExpandMoreIcon />}>
             <Typography variant="body1">
               🏭 Manufacturer
@@ -164,7 +165,7 @@ export default function AssetDetailsModal({ open, onClose, asset }) {
             <Info label="Model" value={asset.model} />
             <Info label="Serial Number" value={asset.serialNumber} />
           </AccordionDetails>
-        </Accordion>
+        </Accordion> */}
 
       </DialogContent>
     </Dialog>

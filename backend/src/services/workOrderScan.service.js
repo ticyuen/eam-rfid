@@ -167,7 +167,7 @@ export async function getWorkOrderScanAssetsService(
     scanSeq: Number(fields.ass_scan_seq),
 
     rfidCode: fields.ass_rfid_code,
-    reason: fields.ass_reason,
+    remark: fields.ass_reason,
 
     commissionDate: fields.ass_commiss,
     profilePicture: fields.ass_profile_pic,

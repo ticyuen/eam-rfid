@@ -185,7 +185,7 @@ export async function searchAssetsService(filtersInput, context) {
     organizationDescription: fields.ass_org,
     location: fields.ass_loc,
     department: fields.ass_dept,
-    status: HXGN_STATUS[fields.ass_condition] ?? fields.ass_condition,
+    status: HXGN_STATUS[fields.ass_status] ?? fields.ass_status,
     zone: fields.ass_zone,
     commissionDate: fields.ass_commiss,
     profilePicture: fields.ass_profile_pic,
@@ -259,7 +259,7 @@ export async function scanAssetsByRFIDService(input, context) {
     organizationDescription: fields.ass_org,
     location: fields.ass_loc,
     department: fields.ass_dept,
-    status: HXGN_STATUS[fields.ass_condition] ?? fields.ass_condition,
+    status: HXGN_STATUS[fields.ass_status] ?? fields.ass_status,
     zone: fields.ass_zone,
     commissionDate: fields.ass_commiss,
     profilePicture: fields.ass_profile_pic,
@@ -269,4 +269,21 @@ export async function scanAssetsByRFIDService(input, context) {
   return {
     assets
   };
+}
+
+export async function getAssetMetadataService(context) {
+  const raw = await executeGrid({
+    gridId: "100025",
+    gridName: "0U6001",
+    userFunctionName: "0U6001",
+    rowLimit: 100
+  }, context);
+
+  const records = mapGridRecords(raw);
+
+  return records.map(fields => ({
+    location: fields.loc_desc,
+    zone: fields.obj_primarysystem,
+    id: fields.id
+  }));
 }

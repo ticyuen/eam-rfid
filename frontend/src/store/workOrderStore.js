@@ -35,7 +35,7 @@ const useWorkOrderStore = create(
           return;
         }
 
-        if (get().isLoaded) return;
+        // if (get().isLoaded) return;
 
         try {
           const raw = await fetchWOApi();

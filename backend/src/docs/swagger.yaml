@@ -721,3 +721,44 @@ paths:
           description: Unauthorized
         "500":
           description: Internal server error
+
+  /api/asset/metadata:
+    get:
+      tags:
+        - Asset
+      summary: Get asset metadata
+      description: Retrieve asset metadata such as location and primary system
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        location:
+                          type: string
+                          example: "Warehouse A"
+                        primarySystem:
+                          type: string
+                          example: "Electrical"
+                        id:
+                          type: string
+                          example: "12345"
+                  message:
+                    type: string
+                    example: ""
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
