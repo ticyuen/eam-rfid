@@ -2,11 +2,11 @@ import express from "express";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 
 import { getAsset, searchAssets, scanAssetsByRFID, getAssetMetadata } from "../controllers/asset.controller.js";
-import { getAssetDetails } from "../controllers/asset.controller.js";
-import { getAssetsByZone } from "../controllers/asset.controller.js";
-
+import { getAssetDetails, getAssetsByZone, updateAssetRFID } from "../controllers/asset.controller.js";
 
 const router = express.Router();
+
+router.patch("/rfid", authMiddleware, updateAssetRFID);
 
 router.get("/search", authMiddleware, searchAssets);
 

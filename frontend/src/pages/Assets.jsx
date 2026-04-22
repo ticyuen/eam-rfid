@@ -110,10 +110,10 @@ export default function Assets() {
 
       <Box sx={{ display: "flex", gap: 1, mt: 3, mb: 2, flexWrap: "wrap" }}>
         <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-          <InputLabel>Building</InputLabel>
+          <InputLabel>location</InputLabel>
           <Select
             value={selectedBuilding}
-            label="Building"
+            label="location"
             onChange={(e) => setSelectedBuilding(e.target.value)}
           >
             {buildings.map((b) => (

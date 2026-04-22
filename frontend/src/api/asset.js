@@ -45,3 +45,12 @@ export const fetchAssetMetadata = async () => {
   const res = await api.get("/asset/metadata");
   return res.data?.data || [];
 };
+
+export const patchAssetRfidCode = async (assetCode, orgCode, rfidCode) => {
+  const res = await api.patch(`/asset/rfid?assetCode=${assetCode}&orgCode=${orgCode}`,
+    {
+      rfidCode: rfidCode.trim().toUpperCase()
+    }
+  );
+  return res?.data?.data;
+};

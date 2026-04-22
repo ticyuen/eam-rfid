@@ -16,6 +16,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
 import AddIcon from '@mui/icons-material/Add';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 import AssetDetailsModal from "../components/AssetDetailsModal";
 import NewAssetModal from "../components/NewAssetModal";
@@ -150,14 +151,6 @@ export default function NearbyAssets() {
     }, 0);
   };
 
-  const handleCreateNewAsset = (asset) => {
-    navigate("/assets/new", {
-      state: {
-        rfidCode: asset.rfidCode
-      }
-    });
-  };
-
   return (
     <Box sx={{ p: 1 }}>
       <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
@@ -186,7 +179,7 @@ export default function NearbyAssets() {
           onClick={handleReset}
           // sx={{ height: 48 }}
         >
-          Reset
+          <RestartAltIcon sx={{ mr: 1 }} /> Reset
         </Button>
 
       </Box>

@@ -15,8 +15,8 @@ import {
   CardContent
 } from "@mui/material";
 
-import api from "../api/axios";
-import { fetchAssetMetadata, fetchAssetsByZone } from "../api/asset";
+import { fetchAssetMetadata, fetchAssetsByZone, patchAssetRfidCode } from "../api/asset";
+import { useUIStore } from "../store";
 
 export default function NewAssetModal({
   open,
@@ -24,13 +24,13 @@ export default function NewAssetModal({
   rfidCode,
   onSuccess
 }) {
-  const [metadata, setMetadata] = useState([]);
+  const showSnackbar=useUIStore((state) =>state.showSnackbar);
 
+  const [metadata, setMetadata] = useState([]);
   const [building, setBuilding] = useState("");
   const [zone, setZone] = useState("");
   const [assetCode, setAssetCode] = useState("");
   const [assets, setAssets] = useState([]);
-
   const [loading, setLoading] = useState(false);
   const [loadingAssets, setLoadingAssets] = useState(false);
 
@@ -57,20 +57,38 @@ export default function NewAssetModal({
     .filter(Boolean);
 
   const handleSave = async () => {
-    if (!assetCode || !rfidCode) return;
-
-    setLoading(true);
+    const orgCode = "TSUSHO";
+    if (!assetCode || !rfidCode || !orgCode) {
+      showSnackbar("Missing required fields", "error");
+      return;
+    }
 
     try {
-      await api.patch(`/api/asset/${assetCode}`, {
-        rfidCode
-      });
+      setLoading(true);
 
-      onSuccess?.(); // refresh parent list
-      onClose();
+      const data = await patchAssetRfidCode(assetCode, orgCode, rfidCode);
 
+      if (!data?.success) {
+        throw new Error(data?.message || "Update failed");
+      }
+
+      showSnackbar(
+        data?.message || "RFID updated successfully",
+        "success"
+      );
+
+      onSuccess?.();
+      handleClose();
     } catch (err) {
-      console.error("Failed to assign RFID:", err);
+      console.error("Save asset RFID failed:", err);
+
+      const msg =
+        err?.response?.data?.data?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to save RFID";
+
+      showSnackbar(msg, "error");
     } finally {
       setLoading(false);
     }
@@ -93,8 +111,10 @@ export default function NewAssetModal({
         {/* RFID */}
         <Card sx={{ mb: 2, background: "#e0e0e0" }}>
           <CardContent>
-            <Typography fontWeight="bold">RFID Code</Typography>
+            <Typography fontWeight="bold" variant="body2">RFID Code</Typography>
             <Typography variant="body2">{rfidCode}</Typography>
+            <Typography variant="body2" fontWeight="bold" sx={{ mt: 1 }}>Assign To:</Typography>
+            <Typography variant="body2">{assetCode ?? "-"}</Typography>
           </CardContent>
         </Card>
 

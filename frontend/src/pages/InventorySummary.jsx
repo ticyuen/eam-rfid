@@ -24,6 +24,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import NewReleasesIcon from "@mui/icons-material/NewReleases";
+import SaveIcon from '@mui/icons-material/Save';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn';
 
 import AssetDetailsModal from "../components/AssetDetailsModal";
 import { useUIStore, useWorkOrderStore } from "../store";
@@ -330,6 +335,15 @@ const InventorySummary = () => {
     }
   };
 
+  const getSecondScanButtonIcon = () => {
+    switch (workOrder.status) {
+      case WorkOrderStatus.SECOND_SCAN_COMPLETED:
+        return <CloudUploadIcon sx={{ mr: 1 }} />;
+      default:
+        return <ArrowRightIcon sx={{ mr: 1 }} fontSize="large" />;
+    }
+  }
+
   const getSecondScanButtonText = () => {
     if (!workOrder) return "Start 2nd Scan";
 
@@ -443,7 +457,7 @@ const InventorySummary = () => {
           color="error"
           onClick={handleReset}
         >
-          🔄 Reset
+          <RestartAltIcon sx={{ mr: 1 }} /> Reset
         </Button>
 
         <Button 
@@ -456,7 +470,7 @@ const InventorySummary = () => {
           variant="contained" 
           onClick={handleSaveChanges}
         >
-          💾 Save Changes
+          <SaveIcon sx={{ mr: 1 }} /> Save
         </Button>
 
       </Box>
@@ -464,7 +478,7 @@ const InventorySummary = () => {
       <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
         <Button 
           sx={{
-            height: 56,
+            height: 50,
             fontSize: 16,
             fontWeight: "bold"
           }}
@@ -481,7 +495,7 @@ const InventorySummary = () => {
             }
           }}
         >
-          📡 {getSecondScanButtonText()}
+          {getSecondScanButtonIcon()} {getSecondScanButtonText()}
         </Button>
       </Box>
 
@@ -656,7 +670,7 @@ const InventorySummary = () => {
                         sx={{ mt: 1 }}
                         onClick={() => handleMarkAsMatched(asset)}
                       >
-                        ⬅️ Returned
+                        <KeyboardReturnIcon sx={{ mr: 1 }} /> Returned
                       </Button>
                   )}
                 </Box>

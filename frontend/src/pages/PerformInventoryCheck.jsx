@@ -1,14 +1,22 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import { Box, Button, Typography, Chip, Card, CardContent, IconButton, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Box, Button, Typography, Chip, Card, CardContent, IconButton, FormControl, InputLabel, Select, MenuItem, Icon } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import TagIcon from '@mui/icons-material/Tag';
 import DescriptionIcon from "@mui/icons-material/Description"; 
 import LocationOnIcon from "@mui/icons-material/LocationOn"; 
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import NewReleasesIcon from "@mui/icons-material/NewReleases";
+import AddIcon from "@mui/icons-material/Add";
+import SensorsIcon from '@mui/icons-material/Sensors';
+import SaveIcon from '@mui/icons-material/Save';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 import AssetDetailsModal from "../components/AssetDetailsModal";
 import RfidScanModal from "../components/RfidScanModal";
+import NewAssetModal from "../components/NewAssetModal";
 
 import { processRFIDScanWithBackend } from "../services/rfidProcessor";
 import { ASSET_SCAN_STATUS, WorkOrderStatus } from "../constants";
@@ -17,10 +25,6 @@ import { fetchAssetsByZone, mapAssets, scanAssetsByRfid } from "../api/asset";
 import { fetchWorkOrderScanUUID, saveWorkOrderScanResult } from "../api/workOrderScan";
 import { createWorkOrderScan } from "../api/workOrder";
 import { getDeviceName } from "../utils/device";
-
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import NewReleasesIcon from "@mui/icons-material/NewReleases";
 
 const getCardColor = (status) => {
   switch (status) {
@@ -34,6 +38,19 @@ const getCardColor = (status) => {
       return "#ffffff";
   }
 };
+
+const getIconColor = (status) => {
+  switch (status) {
+    case ASSET_SCAN_STATUS.MATCHED:
+      return "success";
+    case ASSET_SCAN_STATUS.MISSING:
+      return "warning";
+    case ASSET_SCAN_STATUS.NEW:
+      return "error";
+    default:
+      return "primary";
+  }
+}
 
 const getStatusMeta = (status) => {
   switch (status) {
@@ -79,9 +96,9 @@ const PerformInventoryCheck = () => {
 
   const [tableData, setTableData] = useState([]);
   const [scanText, setScanText] = useState("");
-
   const [openScanModal, setOpenScanModal] = useState(false);
-
+  const [openNewAsset, setOpenNewAsset] = useState(false);
+  const [pendingRFID, setPendingRFID] = useState(null);
   const [selectedAsset, setSelectedAsset] = useState(null);
   const [openAssetModal, setOpenAssetModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
@@ -346,6 +363,37 @@ const PerformInventoryCheck = () => {
     }
   };
 
+  const refreshSingleRFID = async (rfidCode) => {
+    try {
+      const res = await scanAssetsByRfid([rfidCode]);
+      const resolved = res || [];
+
+      if (resolved.length === 0) {
+        return;
+      }
+
+      const updatedAsset = resolved[0];
+
+      setTableData(prev => {
+        const map = new Map(
+          prev.map(a => [a.rfidCode?.toUpperCase(), a])
+        );
+
+        const code = rfidCode.toUpperCase();
+
+        map.set(code, {
+          ...map.get(code),
+          ...updatedAsset
+        });
+
+        return Array.from(map.values());
+      });
+
+    } catch (err) {
+      console.error("Failed to refresh RFID after assignment:", err);
+    }
+  };
+
   const toggleFilter = (status) => setStatusFilter(prev => (prev === status ? null : status));
 
   if (!workOrder) return <Typography>Work order not found</Typography>;
@@ -414,7 +462,7 @@ const PerformInventoryCheck = () => {
           color="error"
           onClick={handleReset}
         >
-          🔄 Reset
+          <RestartAltIcon sx={{ mr: 1 }} /> Reset
         </Button>
 
         <Button 
@@ -427,7 +475,7 @@ const PerformInventoryCheck = () => {
           variant="contained" 
           onClick={handleSave}
         >
-          💾 Save Result
+          <SaveIcon sx={{ mr: 1 }} /> Save Result
         </Button>
 
       </Box>
@@ -444,30 +492,13 @@ const PerformInventoryCheck = () => {
           variant="contained" 
           onClick={() => setOpenScanModal(true)}
         >
-          📡 Scan RFID
+          <SensorsIcon sx={{ mr: 1 }} /> Scan RFID
         </Button>
 
       </Box>
 
       {/* COUNTERS */}
       <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-
-        {/* ALL */}
-        {/* <Box
-          onClick={() => setStatusFilter(null)}
-          sx={{
-            flex: 1,
-            p: 1.5,
-            borderRadius: 2,
-            textAlign: "center",
-            backgroundColor: statusFilter === null ? "#e3f2fd" : "#fff",
-            cursor: "pointer",
-            boxShadow: 1
-          }}
-        >
-          <Typography variant="caption">All</Typography>
-          <Typography fontWeight="bold">{tableData.length}</Typography>
-        </Box> */}
 
         {/* MATCHED */}
         <Box
@@ -564,7 +595,7 @@ const PerformInventoryCheck = () => {
 
                 {/* ASSET CODE */}
                 <Box display="flex" alignItems="center" gap={1}>
-                  <TagIcon fontSize="small" color="action" />
+                  <TagIcon fontSize="small" color={getIconColor(asset.scanStatus)} />
                   <Typography fontWeight="bold" fontSize={16}>
                     {asset.assetCode || "NEW ASSET"}
                   </Typography>
@@ -572,7 +603,7 @@ const PerformInventoryCheck = () => {
 
                 {/* DESCRIPTION */}
                 <Box display="flex" alignItems="center" gap={1} sx={{ mt: 1 }}>
-                  <DescriptionIcon fontSize="small" color="action" />
+                  <DescriptionIcon fontSize="small" color={getIconColor(asset.scanStatus)} />
                   <Typography variant="caption" color="text.secondary">
                     {(asset.assetCode) ? asset.description : asset.rfidCode}
                   </Typography>
@@ -581,7 +612,7 @@ const PerformInventoryCheck = () => {
                 {/* ZONE */}
                 {asset.zone && asset.zone === selectedZone && (
                   <Box display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
-                    <LocationOnIcon fontSize="small" color="action" />
+                    <LocationOnIcon fontSize="small" color={getIconColor(asset.scanStatus)} />
                     <Typography variant="caption">
                       {asset.zone}
                     </Typography>
@@ -591,8 +622,8 @@ const PerformInventoryCheck = () => {
                 {/* BELONGS TO OTHER ZONE */}
                 {asset.zone && asset.zone !== selectedZone && (
                   <Box display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
-                    <LocationOnIcon fontSize="small" color="error" />
-                    <Typography variant="body2" color="error">
+                    <LocationOnIcon fontSize="small" color={getIconColor(asset.scanStatus)} />
+                    <Typography variant="body2" color={getIconColor(asset.scanStatus)}>
                       <strong>Belongs to {asset.zone}</strong>
                     </Typography>
                   </Box>
@@ -605,7 +636,7 @@ const PerformInventoryCheck = () => {
                   size="small"
                   component="div"
                   sx={{
-                    mt: 1,
+                    mt: 1.5,
                     alignSelf: "start",
                     backgroundColor: getStatusMeta(asset.scanStatus).bg,
                     color: getStatusMeta(asset.scanStatus).color,
@@ -615,24 +646,31 @@ const PerformInventoryCheck = () => {
               </Box>
 
               {/* RIGHT ACTION */}
-              <IconButton
-                onClick={() => {
-                  setSelectedAsset(asset);
-                  setOpenAssetModal(true);
-                }}
-                sx={{
-                  backgroundColor: "transparent"
-                }}
-              >
-                <SearchIcon />
-              </IconButton>
+              {asset.assetCode === undefined ? (
+                <IconButton
+                  onClick={() => {
+                    setPendingRFID(asset.rfidCode);
+                    setOpenNewAsset(true);
+                  }}
+                >
+                  <AddIcon color={getIconColor(asset.scanStatus)} />
+                </IconButton>
+              ) : (
+                <IconButton
+                  onClick={() => {
+                    setSelectedAsset(asset);
+                    setOpenAssetModal(true);
+                  }}
+                >
+                  <SearchIcon color={getIconColor(asset.scanStatus)} />
+                </IconButton>
+              )}
 
             </CardContent>
           </Card>
         ))}
       </Box>
 
-      {/* SCAN MODAL */}
       <RfidScanModal
         open={openScanModal}
         value={scanText}
@@ -641,11 +679,24 @@ const PerformInventoryCheck = () => {
         onProcess={handleProcessScan}
       />
 
-      {/* DETAIL MODAL */}
       <AssetDetailsModal
         open={openAssetModal}
         asset={selectedAsset}
         onClose={() => setOpenAssetModal(false)}
+      />
+
+      <NewAssetModal
+        open={openNewAsset}
+        rfidCode={pendingRFID}
+        onClose={() => setOpenNewAsset(false)}
+        onSuccess={async () => {
+          setOpenNewAsset(false);
+          setPendingRFID(null);
+
+          if (pendingRFID) {
+            await refreshSingleRFID(pendingRFID);
+          }
+        }}
       />
     </Box>
   );

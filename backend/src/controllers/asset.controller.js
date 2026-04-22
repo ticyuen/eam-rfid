@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 
-import { getAssetMetadataService, getAssetService, scanAssetsByRFIDService, searchAssetsService } from "../services/asset.service.js";
+import { getAssetMetadataService, getAssetService, scanAssetsByRFIDService, searchAssetsService, updateAssetRFIDService } from "../services/asset.service.js";
 import { getDocumentService } from "../services/document.service.js";
 
 export const getAsset = asyncHandler(async (req, res) => {
@@ -107,6 +107,26 @@ export const scanAssetsByRFID = asyncHandler(async (req, res) => {
 
 export const getAssetMetadata = asyncHandler(async (req, res) => {
   const data = await getAssetMetadataService(req.context);
+
+  res.json(new ApiResponse({ data }));
+});
+
+export const updateAssetRFID = asyncHandler(async (req, res) => {
+  const { assetCode, orgCode } = req.query;
+  const { rfidCode } = req.body;
+
+  if (!assetCode || !orgCode) {
+    throw new ApiError(400, "assetCode and orgCode are required");
+  }
+
+  if (!rfidCode) {
+    throw new ApiError(400, "rfidCode is required");
+  }
+
+  const data = await updateAssetRFIDService(
+    { assetCode, orgCode, rfidCode },
+    req.context
+  );
 
   res.json(new ApiResponse({ data }));
 });

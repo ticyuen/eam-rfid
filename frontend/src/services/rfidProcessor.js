@@ -31,20 +31,13 @@ export async function processRFIDScanWithBackend({
 }
 
 export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
-
-  console.log('existingTableData: ', existingTableData);
-  console.log('scannedCodes: ', scannedCodes);
-  console.log('selectedZone: ', selectedZone);
-
   const normalizedCodes = scannedCodes
     .map(c => c.trim().toUpperCase())
     .filter(Boolean);
 
   const scannedSet = new Set(normalizedCodes);
 
-  /**
-   * 1. Update existing assets WITHOUT resetting previous MATCHED
-   */
+  // 1. Update existing assets WITHOUT resetting previous MATCHED
   const updatedExistingAssets = existingTableData
     .filter(asset => asset.scanStatus !== ASSET_SCAN_STATUS.NEW)
     .map(asset => {
@@ -65,16 +58,12 @@ export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
       return asset;
     });
 
-  /**
-   * 2. Keep ALL existing NEW assets (no need to rescan)
-   */
+  // 2. Keep ALL existing NEW assets (no need to rescan)
   const existingNewAssets = existingTableData.filter(
     asset => asset.scanStatus === ASSET_SCAN_STATUS.NEW
   );
 
-  /**
-   * 3. Detect newly scanned assets
-   */
+  // 3. Detect newly scanned assets
   const existingCodes = new Set([
     ...existingTableData.map(a => a.rfidCode.trim().toUpperCase())
   ]);
@@ -98,9 +87,7 @@ export function processRFIDScan(existingTableData, scannedCodes, selectedZone) {
   ];
 }
 
-/**
- * Merge backend-resolved assets into existing table
- */
+// Merge backend-resolved assets into existing table
 export function mergeBackendAssets(
   existingTableData,
   resolvedAssets,
@@ -139,20 +126,3 @@ export function mergeBackendAssets(
 
   return merged;
 }
-
-// export const mapAssets = (data, zone) => {
-//   return data.map((a) => ({
-//     id: `new-${code}-${selectedZone}`,
-//     assetCode: a.assetCode,
-//     description: a.description,
-//     zone: a.zone,
-//     organization: a.organizationDescription,
-//     location: a.location,
-//     department: a.department,
-//     commissionDate: a.commissionDate,
-//     status: a.status,
-//     profilePicture: a.profilePicture || null,
-//     rfidCode: a.rfidCode,
-//     scanStatus: "MISSING" // default before scan
-//   }));
-// };

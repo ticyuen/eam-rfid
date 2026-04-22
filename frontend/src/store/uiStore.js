@@ -1,7 +1,6 @@
 import { create } from "zustand";
 
 export const useUIStore = create((set) => ({
-  // Loading
   loadingCount: 0,
   startLoading: () =>
     set((state) => ({
@@ -12,7 +11,6 @@ export const useUIStore = create((set) => ({
       loadingCount: Math.max(0, state.loadingCount - 1),
     })),
 
-  // Snackbar
   snackbar: {
     open: false,
     message: "",

@@ -17,7 +17,6 @@ import { useState } from "react";
 import { useAuthStore, useWorkOrderStore } from "../store";
 import Logo from '../assets/logo_banner.png';
 
-// Import icons
 import { 
   Inventory as InventoryIcon, 
   CalendarToday as PmSchedulesIcon, 
@@ -41,7 +40,7 @@ export default function Layout() {
     { text: "Nearby Assets", path: "/assets/nearby", icon: <RadarIcon /> },
     { text: "Work Orders", path: "/work-orders", icon: <ChecklistIcon /> },
     // { text: "Perform Inventory Check", path: "/inventory/perform", icon: <PerformInventoryIcon /> },
-    { text: "Inventory Summary", path: "/inventory/summary", icon: <InventorySummaryIcon /> },
+    // { text: "Inventory Summary", path: "/inventory/summary", icon: <InventorySummaryIcon /> },
   ];
 
   const handleLogout = () => {

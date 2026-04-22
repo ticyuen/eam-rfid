@@ -287,3 +287,37 @@ export async function getAssetMetadataService(context) {
     id: fields.id
   }));
 }
+
+export async function updateAssetRFIDService(
+  { assetCode, orgCode, rfidCode },
+  context
+) {
+  if (!assetCode || !orgCode || !rfidCode) {
+    throw new Error("assetCode, orgCode and rfidCode are required");
+  }
+
+  const formattedAssetAcode = assetCode?.trim().toUpperCase();
+  const raw = `${formattedAssetAcode}#${orgCode}`;
+  const encodedId = encodeURIComponent(encodeURIComponent(raw));
+
+  const payload = {
+    UserDefinedFields: {
+      UDFCHAR04: rfidCode
+    }
+  };
+
+  const res = await safeRequest(
+    eamClient.patch(
+      `/assets/${encodedId}`,
+      payload,
+      eamRequest(context)
+    )
+  );
+
+  return {
+    success: true,
+    message: res.data?.Result?.InfoAlert?.Message || "RFID updated",
+    rfidCode:
+      res.data?.Result?.ResultData?.AssetEquipment?.UserDefinedFields?.UDFCHAR04
+  };
+}
