@@ -13,17 +13,17 @@ import {
   CircularProgress
 } from "@mui/material";
 
-import { useEffect, useState } from "react";
-import { fetchAssetImage } from "../api/asset";
-
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import CloseIcon from "@mui/icons-material/Close";
-import { useTheme } from "@mui/material/styles";
 
+import { useTheme } from "@mui/material/styles";
+import { useEffect, useState } from "react";
+import { fetchAssetImage } from "../api/asset";
 import AssetImage from "../assets/c_logo.jpg";
 
-export default function AssetDetailsModal({ open, onClose, asset }) {
+const renderText = (text) => { return text === "" || text === undefined ? "-" : text };
 
+export default function AssetDetailsModal({ open, onClose, asset }) {
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -31,7 +31,6 @@ export default function AssetDetailsModal({ open, onClose, asset }) {
   const [loadingImage, setLoadingImage] = useState(false);
 
   useEffect(() => {
-    console.log('asst: ', asset)
     const loadImage = async () => {
       if (!asset?.profilePicture) {
         setImageSrc(null);
@@ -119,15 +118,15 @@ export default function AssetDetailsModal({ open, onClose, asset }) {
           {/* TEXT CONTENT */}
           <Box sx={{ flex: 1 }}>
             <Typography variant="h6">
-              {asset.assetCode}
+              {asset.assetCode === "" ? "NEW ASSET" : asset.assetCode}
             </Typography>
 
             <Typography variant="body1" color="text.secondary">
-              {asset.description}
+              {renderText(asset.description)}
             </Typography>
 
             <Chip
-              label={asset.status}
+              label={renderText(asset.status)}
               size="small"
               sx={{ mt: 1 }}
             />
@@ -148,24 +147,9 @@ export default function AssetDetailsModal({ open, onClose, asset }) {
             <Info label="Zone" value={asset.zone} />
             <Info label="Department" value={asset.department} />
             <Info label="Commission Date" value={asset.commissionDate} />
-            <Info label="RFID Code" value={asset.rfidCode} />
+            <Info label="RFID Code" value={asset.rfidCode === "" ? asset.newRfidCode : asset.rfidCode} />
           </AccordionDetails>
         </Accordion>
-
-        {/* MANUFACTURER */}
-        {/* <Accordion style={{ marginBottom: 1, marginTop: 0 }}>
-          <AccordionSummary style={{ minHeight: 50 }} expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="body1">
-              🏭 Manufacturer
-            </Typography>
-          </AccordionSummary>
-
-          <AccordionDetails>
-            <Info label="Manufacturer" value={asset.manufacturer} />
-            <Info label="Model" value={asset.model} />
-            <Info label="Serial Number" value={asset.serialNumber} />
-          </AccordionDetails>
-        </Accordion> */}
 
       </DialogContent>
     </Dialog>

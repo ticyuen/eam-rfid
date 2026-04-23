@@ -12,7 +12,9 @@ import {
   MenuItem,
   InputLabel,
   Card,
-  CardContent
+  CardContent,
+  Autocomplete,
+  TextField
 } from "@mui/material";
 
 import { fetchAssetMetadata, fetchAssetsByZone, patchAssetRfidCode } from "../api/asset";
@@ -27,7 +29,7 @@ export default function NewAssetModal({
   const showSnackbar=useUIStore((state) =>state.showSnackbar);
 
   const [metadata, setMetadata] = useState([]);
-  const [building, setBuilding] = useState("");
+  const [location, setLocation] = useState("");
   const [zone, setZone] = useState("");
   const [assetCode, setAssetCode] = useState("");
   const [assets, setAssets] = useState([]);
@@ -49,10 +51,10 @@ export default function NewAssetModal({
     load();
   }, [open]);
 
-  const buildings = [...new Set(metadata.map(m => m.location).filter(Boolean))];
+  const locations = [...new Set(metadata.map(m => m.location).filter(Boolean))];
 
   const zones = metadata
-    .filter(m => m.location === building)
+    .filter(m => m.location === location)
     .map(m => m.zone)
     .filter(Boolean);
 
@@ -61,6 +63,14 @@ export default function NewAssetModal({
     if (!assetCode || !rfidCode || !orgCode) {
       showSnackbar("Missing required fields", "error");
       return;
+    }
+
+    if (selectedAsset?.rfidCode) {
+      const confirmOverwrite = window.confirm(
+        `This asset already has an RFID (${selectedAsset.rfidCode}).\n\nDo you want to overwrite it with the new RFID (${rfidCode})?`
+      );
+
+      if (!confirmOverwrite) return;
     }
 
     try {
@@ -95,11 +105,14 @@ export default function NewAssetModal({
   };
 
   const handleClose = () => {
-    setBuilding("");
+    setLocation("");
     setZone("");
     setAssetCode("");
+    setAssets([]);
     onClose();
   };
+
+  const selectedAsset = assets?.find(a => a.assetCode === assetCode);
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
@@ -114,29 +127,36 @@ export default function NewAssetModal({
             <Typography fontWeight="bold" variant="body2">RFID Code</Typography>
             <Typography variant="body2">{rfidCode}</Typography>
             <Typography variant="body2" fontWeight="bold" sx={{ mt: 1 }}>Assign To:</Typography>
-            <Typography variant="body2">{assetCode ?? "-"}</Typography>
+            <Typography variant="body2">• {assetCode ?? "-"}</Typography>
+            <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }} component="div">• {selectedAsset?.description}</Typography>
+            <Typography 
+              variant="caption" 
+              color={(selectedAsset?.rfidCode !== "") ? "error" : "textSecondary"}
+              fontWeight={(selectedAsset?.rfidCode !== "") ? "bold" : "normal"}
+              sx={{ mt: 0.5 }}
+            >• {selectedAsset?.rfidCode}</Typography>
           </CardContent>
         </Card>
 
-        {/* BUILDING */}
+        {/* LOCATION */}
         <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-          <InputLabel>Building</InputLabel>
+          <InputLabel>Location</InputLabel>
           <Select
-            value={building}
+            value={location}
             onChange={(e) => {
-              setBuilding(e.target.value);
+              setLocation(e.target.value);
               setZone("");
               setAssetCode("");
             }}
           >
-            {buildings.map(b => (
+            {locations.map(b => (
               <MenuItem key={b} value={b}>{b}</MenuItem>
             ))}
           </Select>
         </FormControl>
 
         {/* ZONE */}
-        <FormControl fullWidth size="small" sx={{ mb: 2 }} disabled={!building}>
+        <FormControl fullWidth size="small" sx={{ mb: 2 }} disabled={!location}>
           <InputLabel>Zone</InputLabel>
           <Select
             value={zone}
@@ -169,23 +189,31 @@ export default function NewAssetModal({
 
         {/* ASSET */}
         <FormControl fullWidth size="small" disabled={!zone || loadingAssets}>
-          <InputLabel>Asset</InputLabel>
-            <Select
-                value={assetCode}
-                onChange={(e) => setAssetCode(e.target.value)}
-            >
-                {loadingAssets ? (
-                    <MenuItem disabled>
-                        Loading assets...
-                    </MenuItem>
-                    ) : (
-                    assets.map((a) => (
-                        <MenuItem key={a.id} value={a.assetCode}>
-                        {a.assetCode}
-                        </MenuItem>
-                    ))
-                )}
-            </Select>
+            <Autocomplete
+              options={assets}
+              getOptionLabel={(option) => option.assetCode}
+              value={assets.find(a => a.assetCode === assetCode) || null}
+              onChange={(e, newValue) => setAssetCode(newValue?.assetCode || "")}
+              disabled={zone === ""}
+              renderOption={(props, option) => {
+                const { key, ...rest } = props;
+                return (
+                  <Box component="li" key={key} {...rest}>
+                    <Box>
+                      <Typography fontWeight="bold" variant="body1">
+                        {option.assetCode}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {option.description}
+                      </Typography>
+                    </Box>
+                  </Box>
+                );
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="Asset" size="small" />
+              )}
+            />
         </FormControl>
 
       </DialogContent>

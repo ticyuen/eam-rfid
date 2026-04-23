@@ -54,12 +54,13 @@ const InventorySummary = () => {
   const allAssets = apiAssets;
 
   const workOrder = workOrders.find((wo) => wo?.id.toString() === selectedWOId);
+  console.log('SelectedWOId: ', selectedWOId);
 
   const isSecondScan =
     workOrder?.status === WorkOrderStatus.SECOND_SCAN_COMPLETED ||
     workOrder?.status === WorkOrderStatus.SECOND_SCAN_IN_PROGRESS;
 
-  const scanSeq = isSecondScan ? 2 : 1
+  const scanSeq = isSecondScan ? 2 : 1;
 
   const completedWorkOrders = workOrders.filter(
     (wo) =>
@@ -89,6 +90,7 @@ const InventorySummary = () => {
         zoneCode: a.zoneCode,
         currentZoneCode: a.currentZoneCode,
         rfidCode: a.rfidCode,
+        newRfidCode: a.newRfidCode,
         status: a.status,
         scanStatus: a.scanStatus,
         scanSeq: a.scanSeq,
@@ -176,10 +178,14 @@ const InventorySummary = () => {
     }
   };
 
-  const handleRemarkChange = (assetCode, value) => {
+  const getAssetKey = (asset) => asset.assetCode || asset.newRfidCode;
+
+  const handleRemarkChange = (asset, value) => {
+    const key = getAssetKey(asset);
+
     setApiAssets(prev =>
       prev.map(a =>
-        a.assetCode === assetCode
+        getAssetKey(a) === key
           ? { ...a, remark: value, isEdited: true }
           : a
       )
@@ -187,7 +193,7 @@ const InventorySummary = () => {
 
     setEditedAssets(prev => ({
       ...prev,
-      [assetCode]: true
+      [key]: true
     }));
   };
 
@@ -217,32 +223,29 @@ const InventorySummary = () => {
     if (!selectedWOId) return;
 
     const changedList = Object.entries(editedAssets);
+    console.log('changedList: ', changedList)
 
-    if (changedList.length === 0) {
-      showSnackbar("No changes to save", "warning");
-      console.log("No Changes")
-      return;
-    }
+    if (changedList.length === 0) return;
 
     try {
-      const changedAssetObjects = allAssets.filter(a => editedAssets[a.assetCode]);
+      const changedAssetObjects = allAssets.filter(a => editedAssets[getAssetKey(a)]);
 
       console.log('changedAssetObjects: ', changedAssetObjects);
 
       if (changedAssetObjects.length === 0) return;
 
-      // 1. Get UUID (same for all)
-      const workOrderScanUuid =
-        changedAssetObjects[0]?.workOrderScanUuid;
+      // 1. Get workOrderId (same for all)
+      const workOrderScanUuid = changedAssetObjects[0]?.workOrderScanUuid;
+      const workOrderId = changedAssetObjects[0]?.workOrderId;
 
-      if (!workOrderScanUuid) {
-        console.error("Missing workOrderScanUuid");
+      if (!workOrderId) {
+        console.error("Missing workOrderId");
         return;
       }
 
       // 2. Group assets by zone
       const groupedByZone = changedAssetObjects.reduce((acc, asset) => {
-        const zone = asset.zoneCode;
+        const zone = asset.zoneCode === "" ? "-" : asset.zoneCode;
 
         if (!zone) return acc;
 
@@ -252,20 +255,31 @@ const InventorySummary = () => {
           assetCode: asset.assetCode,
           assetStatus: asset.scanStatus,
           scanSeq,
-          remark: asset.remark || ""
+          remark: asset.remark || "",
+          newRfidCode: asset.newRfidCode
         });
 
         return acc;
       }, {});
 
+      console.log("Saving payload:", groupedByZone);
       // 3. Call API per zone
       const promises = Object.entries(groupedByZone).map(
         ([zone, assets]) =>
+        {
+          console.log("asset:: ", {
+            workOrderScanUUID: workOrderScanUuid,
+            workOrderId: workOrderId,
+            zone,
+            assets
+          });
           saveWorkOrderScanResult({
             workOrderScanUUID: workOrderScanUuid,
+            workOrderId: workOrderId,
             zone,
             assets
           })
+        }
       );
 
       await Promise.all(promises);
@@ -410,13 +424,7 @@ const InventorySummary = () => {
     return { total, matched, missing, newCount };
   }, [allAssets]);
 
-  // if (!workOrder) {
-  //   return (
-  //     <Typography sx={{ p: 2 }}>
-  //       Work order not found
-  //     </Typography>
-  //   );
-  // }
+  console.log('Filtered Assets: ', filteredAssets)
 
   return (
     <Box sx={{ p: 1 }}>
@@ -432,21 +440,6 @@ const InventorySummary = () => {
       <Typography variant="body2" sx={{ mb: 2 }}>
         <strong>Work Order Status: </strong> {workOrder?.status}
       </Typography>
-
-      {/* <FormControl fullWidth size="small" sx={{ mb: 2 }}>
-        <InputLabel>Work Order</InputLabel>
-        <Select
-          value={selectedWOId}
-          label="Work Order"
-          onChange={(e) => setSelectedWOId(e.target.value)}
-        >
-          {completedWorkOrders.map((wo) => (
-            <MenuItem key={wo.id} value={wo.id}>
-              {wo.id} - {wo.status}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl> */}
 
       <Box sx={{ display: "flex", gap: 1 }}>
       
@@ -572,7 +565,7 @@ const InventorySummary = () => {
         {filteredAssets.map((asset) => {
           return (
             <Card
-              key={asset.id}
+              key={getAssetKey(asset)}
               sx={{
                 borderRadius: 3,
                 background: "#fff",
@@ -606,16 +599,16 @@ const InventorySummary = () => {
                   </Box>
 
                   {/* ZONE CONDITIONS */}
-                  {asset.zoneCode === asset.currentZoneCode && (
+                  {(asset.scanStatus === ASSET_SCAN_STATUS.MATCHED && asset.assetCode !== "") && (
                     <Box display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
                       <LocationOnIcon fontSize="small" color="action" />
                       <Typography variant="caption">
-                        {asset.zoneCode}
+                        {asset.zoneCode === "" ? "-" : asset.zoneCode}
                       </Typography>
                     </Box>
                   )}
   
-                  {asset.zoneCode !== asset.currentZoneCode && asset.scanStatus !== ASSET_SCAN_STATUS.MATCHED && (
+                  {asset.zoneCode !== asset.currentZoneCode && asset.assetCode !== "" && asset.scanStatus !== ASSET_SCAN_STATUS.MATCHED && (
                     <Box>
                       <Box display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
                         <LocationOnIcon fontSize="small" color="action" />
@@ -639,7 +632,7 @@ const InventorySummary = () => {
                         Remark:
                       </Typography>
                       <TextField
-                        onChange={(e) => handleRemarkChange(asset.assetCode, e.target.value)}
+                        onChange={(e) => handleRemarkChange(asset, e.target.value)}
                         value={asset.remark || ""}
                         size="small"
                         fullWidth
@@ -663,7 +656,8 @@ const InventorySummary = () => {
                   {/* ===== 1st SCAN MODE ===== */}
                   {!isSecondScan &&
                     (asset.scanStatus === ASSET_SCAN_STATUS.NEW ||
-                      asset.scanStatus === ASSET_SCAN_STATUS.MISSING) && (
+                      asset.scanStatus === ASSET_SCAN_STATUS.MISSING) &&
+                      asset.assetCode !== "" && (
                       <Button
                         size="small"
                         variant="contained"

@@ -114,7 +114,7 @@ const WorkOrder = () => {
   };
 
   const getCardColor = (status) => {
-    if (status === WorkOrderStatus.COMPLETED) return "#e9ffeb";
+    if (status === WorkOrderStatus.COMPLETED) return "#f0fff1";
     if (status === WorkOrderStatus.RELEASED) return "white";
     return "#fff8e1";
   };
@@ -158,6 +158,8 @@ const WorkOrder = () => {
                     color={
                       wo.status === WorkOrderStatus.RELEASED
                         ? "inactive"
+                        : wo.status === WorkOrderStatus.COMPLETED
+                        ? "success"
                         : "warning"
                     }
                   />

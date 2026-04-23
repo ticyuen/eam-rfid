@@ -17,8 +17,8 @@ export default function Login() {
   const login = useAuthStore((state) => state.login);
   const showSnackbar = useUIStore((state) =>state.showSnackbar);
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("TEST");
+  const [password, setPassword] = useState("asd");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {

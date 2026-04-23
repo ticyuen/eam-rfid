@@ -580,10 +580,6 @@ paths:
       responses:
         200:
           description: Work order updated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkOrderStatusResponse'
 
         400:
           description: Bad request (missing parameters)
@@ -594,7 +590,7 @@ paths:
         500:
           description: Internal server error
 
-  /api/work-order-scan/{workOrderScanUuid}/zone/{zoneCode}/save-result:
+  /api/work-order-scan/{workOrderId}/work-order/{workOrderId}/zone/{zoneCode}/save-result:
     post:
       tags:
         - Work Order Scan
@@ -609,20 +605,23 @@ paths:
           required: true
           schema:
             type: string
-          example: 401ed05f-d696-40d3-a8f1-40ed5b1f65b0
+            
+        - in: path
+          name: workOrderId
+          required: true
+          schema:
+            type: string
           
         - in: query
           name: locationId
           schema:
             type: string
-          example: S686
 
         - in: path
           name: zoneCode
           required: true
           schema:
             type: string
-          example: PANTRY
 
       requestBody:
         required: true
@@ -648,9 +647,11 @@ paths:
                   - assetCode: "FF25001/HQ"
                     assetStatus: "MATCHED"
                     scanSeq: 1
+                    newRfidCode: "3014F4146000004000003DA0"
                   - assetCode: "FF25003/HQ"
                     assetStatus: "MISSING"
                     scanSeq: 2
+                    newRfidCode: "E280699500004006D0A2DE5B"
 
       responses:
         200:

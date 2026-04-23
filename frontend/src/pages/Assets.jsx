@@ -27,10 +27,10 @@ import SearchIcon from "@mui/icons-material/Search";
 export default function Assets() {
   const [metadata, setMetadata] = useState([]);
 
-  const [buildings, setBuildings] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [zones, setZones] = useState([]);
 
-  const [selectedBuilding, setSelectedBuilding] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("");
   const [selectedZone, setSelectedZone] = useState("");
 
   const [assets, setAssets] = useState([]);
@@ -43,12 +43,12 @@ export default function Assets() {
 
       setMetadata(data);
 
-      // Extract unique buildings
-      const uniqueBuildings = [
+      // Extract unique locations
+      const uniqueLocations = [
         ...new Set(data.map(d => d.location).filter(Boolean))
       ];
 
-      setBuildings(uniqueBuildings);
+      setLocations(uniqueLocations);
 
     } catch (err) {
       console.error("Failed to fetch metadata:", err);
@@ -60,14 +60,14 @@ export default function Assets() {
   }, []);
 
   useEffect(() => {
-    if (!selectedBuilding) {
+    if (!selectedLocation) {
       setZones([]);
       setSelectedZone("");
       return;
     }
 
     const filteredZones = metadata
-      .filter(d => d.location === selectedBuilding)
+      .filter(d => d.location === selectedLocation)
       .map(d => d.zone)
       .filter(Boolean);
 
@@ -75,10 +75,10 @@ export default function Assets() {
 
     setZones(uniqueZones);
 
-    // Auto reset zone when building changes
+    // Auto reset zone when location changes
     setSelectedZone("");
     setAssets([]);
-  }, [selectedBuilding, metadata]);
+  }, [selectedLocation, metadata]);
 
   useEffect(() => {
     const loadAssets = async () => {
@@ -112,11 +112,11 @@ export default function Assets() {
         <FormControl fullWidth size="small" sx={{ mb: 2 }}>
           <InputLabel>location</InputLabel>
           <Select
-            value={selectedBuilding}
+            value={selectedLocation}
             label="location"
-            onChange={(e) => setSelectedBuilding(e.target.value)}
+            onChange={(e) => setSelectedLocation(e.target.value)}
           >
-            {buildings.map((b) => (
+            {locations.map((b) => (
               <MenuItem key={b} value={b}>
                 {b}
               </MenuItem>
@@ -130,7 +130,7 @@ export default function Assets() {
             value={selectedZone}
             label="Zone"
             onChange={(e) => setSelectedZone(e.target.value)}
-            disabled={!selectedBuilding}
+            disabled={!selectedLocation}
           >
             {zones.map((z) => (
               <MenuItem key={z} value={z}>

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { 
   Box, Typography, TextField, IconButton,
   Card,
@@ -27,11 +26,9 @@ import { ASSET_SCAN_STATUS } from "../constants";
 const getCardColor = (status) => {
   switch (status) {
     case ASSET_SCAN_STATUS.MATCHED:
-      return "#fafffa"; // soft green
-    case ASSET_SCAN_STATUS.MISSING:
-      return "#fcf9f5"; // soft amber
+      return "#fafffa";
     case ASSET_SCAN_STATUS.NEW:
-      return "#fff9f8"; // soft red
+      return "#fff9f8";
     default:
       return "#ffffff";
   }
@@ -39,20 +36,6 @@ const getCardColor = (status) => {
 
 const getStatusMeta = (status) => {
   switch (status) {
-    case ASSET_SCAN_STATUS.MATCHED:
-      return {
-        color: "#2e7d32",
-        bg: "#e8f5e9",
-        icon: <CheckCircleIcon fontSize="small" />,
-        label: "Matched"
-      };
-    case ASSET_SCAN_STATUS.MISSING:
-      return {
-        color: "#ed6c02",
-        bg: "#fff3e0",
-        icon: <WarningAmberIcon fontSize="small" />,
-        label: "Missing"
-      };
     case ASSET_SCAN_STATUS.NEW:
       return {
         color: "#d32f2f",
@@ -74,7 +57,6 @@ const isNewAsset = (asset) => asset.isNew === true;
 
 export default function NearbyAssets() {
   const scanInputRef = useRef(null);
-  const navigate = useNavigate();
   const [scanInput, setScanInput] = useState("");
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -153,7 +135,7 @@ export default function NearbyAssets() {
 
   return (
     <Box sx={{ p: 1 }}>
-      <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>
+      <Typography variant="h5" fontWeight="bold">
         Nearby Assets Scan
       </Typography>
 
@@ -177,6 +159,7 @@ export default function NearbyAssets() {
           variant="outlined"
           color="error"
           onClick={handleReset}
+          disabled={loading}
           // sx={{ height: 48 }}
         >
           <RestartAltIcon sx={{ mr: 1 }} /> Reset
@@ -185,13 +168,17 @@ export default function NearbyAssets() {
       </Box>
 
       <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 1 }}>
-        {assets.length === 0 && !loading && (
+        {/* {assets.length === 0 && !loading && (
           <Typography>No assets found</Typography>
-        )}
+        )} */}
+      
+        <Typography variant="body1" sx={{ mt: 2 }}>
+          Found Assets: {assets.length ?? 0}
+        </Typography>
 
-        {assets.map((asset) => (
+        {assets.map((asset, idx) => (
           <Card
-            key={asset.id}
+            key={`${asset.id}-${idx}`}
             sx={{
               borderRadius: 3,
               boxShadow: 2,
@@ -215,21 +202,21 @@ export default function NearbyAssets() {
               <Box display="flex" flexDirection="column" gap={0.5} sx={{ width: "100%" }}>
 
                 <Box display="flex" alignItems="center" gap={1}>
-                  <TagIcon fontSize="small" />
+                  <TagIcon fontSize="small" sx={{ color: getStatusMeta(asset.scanStatus).color }} />
                   <Typography fontWeight="bold">
                     {asset.assetCode || ""}
                   </Typography>
                 </Box>
 
                 <Box display="flex" alignItems="center" gap={1} sx={{ mt: 1 }}>
-                  <DescriptionIcon fontSize="small" />
+                  <DescriptionIcon fontSize="small" sx={{ color: getStatusMeta(asset.scanStatus).color }} />
                   <Typography variant="body2" color="text.secondary">
                     {asset.description || "-"}
                   </Typography>
                 </Box>
 
                 <Box display="flex" alignItems="center" gap={1} sx={{ mt: 1 }}>
-                  <LocationOnIcon fontSize="small" />
+                  <LocationOnIcon fontSize="small" sx={{ color: getStatusMeta(asset.scanStatus).color }} />
                   <Typography variant="caption">
                     {asset.zone || "-"}
                   </Typography>

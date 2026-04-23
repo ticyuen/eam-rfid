@@ -10,12 +10,13 @@ export const fetchWorkOrderScanUUID = async (workOrderId) => {
 
 export const saveWorkOrderScanResult = async ({
   workOrderScanUUID,
+  workOrderId,
   zone,
   locationId,
   assets
 }) => {
   const res = await api.post(
-    `/work-order-scan/${workOrderScanUUID}/zone/${zone}/save-result?locationId=${locationId}`,
+    `/work-order-scan/${workOrderScanUUID}/work-order/${workOrderId}/zone/${zone}/save-result?locationId=${locationId}`,
     { assets }
   );
 

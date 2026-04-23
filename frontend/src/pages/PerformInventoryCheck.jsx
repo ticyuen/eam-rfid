@@ -29,11 +29,11 @@ import { getDeviceName } from "../utils/device";
 const getCardColor = (status) => {
   switch (status) {
     case ASSET_SCAN_STATUS.MATCHED:
-      return "#fafffa"; // soft green
+      return "#fafffa";
     case ASSET_SCAN_STATUS.MISSING:
-      return "#fcf9f5"; // soft amber
+      return "#fcf9f5";
     case ASSET_SCAN_STATUS.NEW:
-      return "#fff9f8"; // soft red
+      return "#fff9f8";
     default:
       return "#ffffff";
   }
@@ -289,15 +289,23 @@ const PerformInventoryCheck = () => {
         : 1;
 
     // Build payload
-    const payloadAssets = tableData.filter(x => x.assetCode !== "NEW ASSET").map((asset) => ({
-      assetCode: asset.assetCode || asset.rfidCode,
-      assetStatus: asset.scanStatus,
-      scanSeq
-    }));
+    const payloadAssets = tableData.map((asset) => {
+      const isNewWithoutCode = !asset.assetCode || asset.assetCode === "NEW ASSET";
+
+      return {
+        assetCode: isNewWithoutCode ? "-" : asset.assetCode,
+        assetStatus: asset.scanStatus,
+        scanSeq,
+        rfidCode: asset.rfidCode,
+      };
+    });
+
+    console.log('PIC| payloadAssets: ', payloadAssets);
 
     try {
       const res = await saveWorkOrderScanResult({
         workOrderScanUUID: workOrderScanUUID,
+        workOrderId: currentWO.id,
         zone: selectedZone,
         locationId: currentWO.locationId,
         assets: payloadAssets

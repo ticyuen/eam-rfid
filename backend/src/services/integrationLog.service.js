@@ -53,7 +53,7 @@ function buildPayload(log) {
         field("REQHEADER", text(JSON.stringify(log.headers))),
         field("REQBODY", text(JSON.stringify(log.requestBody))),
         field("RESBODY", text(JSON.stringify(log.responseBody))),
-        field("PROCESSEDBODY", text("")), // always blank
+        field("PROCESSEDBODY", text("")),
         field("ERRORCODE", text(
           log.errorCode && log.errorCode > 200 ? String(log.errorCode) : ""
         ))

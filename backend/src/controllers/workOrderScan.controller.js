@@ -4,7 +4,7 @@ import { ApiError } from "../utils/apiError.js";
 import { saveWorkOrderScanResultService, getWorkOrderScanStatusService, getWorkOrderScanAssetsService } from "../services/workOrderScan.service.js";
 
 export const saveWorkOrderScanResult = asyncHandler(async (req, res) => {
-  const { workOrderScanUuid, zoneCode } = req.params;
+  const { workOrderScanUuid, workOrderId, zoneCode } = req.params;
   const { locationId } = req.query;
 
   const body = req.body;
@@ -20,6 +20,7 @@ export const saveWorkOrderScanResult = asyncHandler(async (req, res) => {
   scans = scans.map(s => ({
     ...s,
     workOrderScanUuid,
+    workOrderId,
     locationId: locationId,
     zoneCode
   }));

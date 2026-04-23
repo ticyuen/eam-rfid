@@ -13,17 +13,18 @@ const BATCH_DELAY = 200;    // optional safety delay (ms)
 function buildPayload(scan) {
   const {
     workOrderScanUuid,
+    workOrderId,
     locationId,
     zoneCode,
     assetCode,
+    rfidCode,
+    newRfidCode,
     assetStatus,
     scanSeq,
     remark
   } = scan;
 
-  if (!zoneCode || !assetCode) {
-    throw new Error(`Invalid scan payload for assetCode=${assetCode}, zoneCode=${zoneCode}`);
-  }
+  const rfid = (newRfidCode === "" || newRfidCode === undefined || newRfidCode === null) ? rfidCode : newRfidCode;
 
   return buildUDSRequest({
     screenName: "UUASSC",
@@ -31,9 +32,11 @@ function buildPayload(scan) {
     fields: [
       UDSField.uuid("UUID"),
       UDSField.text("WORKORDERSCANUUID", workOrderScanUuid),
+      UDSField.text("WORKORDERID", workOrderId),
       UDSField.text("LOCATIONID", ""),
       UDSField.text("ZONECODE", zoneCode),
       UDSField.text("ASSETCODE", assetCode),
+      UDSField.text("RFIDCODE", rfid),
       UDSField.text("ASSETSTATUS", assetStatus || ""),
       UDSField.text("REASON", remark),
       UDSField.number("SCANSEQ", scanSeq ?? 0)
@@ -70,7 +73,7 @@ export async function saveWorkOrderScanResultService(scans, context) {
 
     finalResults.push(...results);
 
-    // 👇 small delay to avoid hammering HXGN
+    // small delay to avoid hammering HXGN
     await sleep(BATCH_DELAY);
   }
 
@@ -165,6 +168,7 @@ export async function getWorkOrderScanAssetsService(
     scanSeq: Number(fields.ass_scan_seq),
 
     rfidCode: fields.ass_rfid_code,
+    newRfidCode: fields.assc_rfid_code,
     remark: fields.ass_reason,
 
     commissionDate: fields.ass_commiss,

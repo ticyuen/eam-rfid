@@ -6,6 +6,8 @@ import { getAssetDetails, getAssetsByZone, updateAssetRFID } from "../controller
 
 const router = express.Router();
 
+router.post("/rfid/scan", authMiddleware, scanAssetsByRFID);
+
 router.patch("/rfid", authMiddleware, updateAssetRFID);
 
 router.get("/search", authMiddleware, searchAssets);
@@ -13,8 +15,6 @@ router.get("/search", authMiddleware, searchAssets);
 router.get("/details", authMiddleware, getAssetDetails);
 
 router.get("/metadata", authMiddleware, getAssetMetadata);
-
-router.post("/rfid/scan", authMiddleware, scanAssetsByRFID);
 
 router.get("/zone/:zone", authMiddleware, getAssetsByZone);
 

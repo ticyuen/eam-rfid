@@ -87,7 +87,7 @@ const RfidScanModal = ({ open, onClose, onProcess }) => {
           multiline
           rows={6}
           fullWidth
-          autofocus
+          autoFocus
           inputProps={{ inputMode: 'none' }}
           placeholder="Scan RFID tags here."
         />

@@ -4,7 +4,7 @@ import { getWorkOrderScanAssets, getWorkOrderScanStatus, saveWorkOrderScanResult
 
 const router = express.Router();
 
-router.post("/:workOrderScanUuid/zone/:zoneCode/save-result", authMiddleware, saveWorkOrderScanResult);
+router.post("/:workOrderScanUuid/work-order/:workOrderId/zone/:zoneCode/save-result", authMiddleware, saveWorkOrderScanResult);
 
 router.get("/status", authMiddleware, getWorkOrderScanStatus);
 
