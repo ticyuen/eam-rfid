@@ -5,13 +5,11 @@ import { buildUDSRequest, UDSField } from "../lib/userDefinedScreenBuilder.js";
 import { chunkArray, sleep } from "../utils/batch.util.js";
 import { executeGrid, createFilter, mapGridRecords } from "./grid.service.js";
 import { HXGN_STATUS } from "../constants/hxgnStatus.js";
+import { ENV } from "../config/env.js";
 
 const CHUNK_SIZE = 10;
 const BATCH_DELAY = 200;    // optional safety delay (ms)
 
-/**
- * Normalize + validate single scan
- */
 function buildPayload(scan) {
   const {
     workOrderScanUuid,
@@ -33,7 +31,7 @@ function buildPayload(scan) {
     fields: [
       UDSField.uuid("UUID"),
       UDSField.text("WORKORDERSCANUUID", workOrderScanUuid),
-      UDSField.text("LOCATIONID", locationId),
+      UDSField.text("LOCATIONID", ""),
       UDSField.text("ZONECODE", zoneCode),
       UDSField.text("ASSETCODE", assetCode),
       UDSField.text("ASSETSTATUS", assetStatus || ""),
@@ -105,9 +103,9 @@ export async function getWorkOrderScanStatusService({ workOrderId }, context) {
   ];
 
   const raw = await executeGrid({
-    gridId: "100020",
-    gridName: "0U5003",
-    userFunctionName: "0U5003",
+    gridId: ENV.GRID_LATEST_WOSC_ID,
+    gridName: ENV.GRID_LATEST_WOSC_NAME,
+    userFunctionName: ENV.GRID_LATEST_WOSC_NAME,
     filters
   }, context);
 
@@ -141,9 +139,9 @@ export async function getWorkOrderScanAssetsService(
   }
 
   const raw = await executeGrid({
-    gridId: "100024",
-    gridName: "0U5005",
-    userFunctionName: "0U5005",
+    gridId: ENV.GRID_ASSET_SCAN_ID,
+    gridName: ENV.GRID_ASSET_SCAN_NAME,
+    userFunctionName: ENV.GRID_ASSET_SCAN_NAME,
     filters,
     rowLimit: 100
   }, context);

@@ -321,13 +321,13 @@ const InventorySummary = () => {
 
       await createWorkOrderScan({
         workOrderId: selectedWOId,
-        status: WorkOrderStatus.JOB_DONE,
+        status: WorkOrderStatus.COMPLETED,
         deviceName,
         deviceIp: null,
         remark: ""
       });
 
-      updateStatus(selectedWOId, WorkOrderStatus.JOB_DONE);
+      updateStatus(selectedWOId, WorkOrderStatus.COMPLETED);
       showSnackbar("Work Order submitted successfully","success");
       navigate("/work-orders")
     } catch (err) {

@@ -6,6 +6,7 @@ import { eamRequest } from "../lib/eamRequest.js";
 import { safeRequest } from "../utils/httpClient.js";
 import { v4 as uuidv4 } from "uuid";
 import { buildUDSRequest, UDSField } from "../lib/userDefinedScreenBuilder.js";
+import { ENV } from "../config/env.js";
 
 function transformWorkOrders(records) {
   const grouped = {};
@@ -96,9 +97,9 @@ export async function getWorkOrdersService(filtersInput, context) {
   }
 
   const raw = await executeGrid({
-    gridId: "100022",
-    gridName: "0U5004",
-    userFunctionName: "0U5004",
+    gridId: ENV.GRID_WO_DETAILS_ID,
+    gridName: ENV.GRID_WO_DETAILS_NAME,
+    userFunctionName: ENV.GRID_WO_DETAILS_NAME,
     filters,
     rowLimit: 100
   }, context);
@@ -138,9 +139,59 @@ export async function addWorkOrderScanService(payload, context) {
     )
   );
 
+  if (status?.toUpperCase() === "COMPLETED") {
+    try {
+      await updateWorkOrderStatusService(
+        {
+          workOrderId,
+          orgCode: "TSUSHO1",
+          status: "C"
+        },
+        context
+      );
+    } catch (err) {
+      // Don't break main flow
+      console.error("Failed to auto-complete work order:", err.message);
+    }
+  }
+
   return {
     success: true,
     message: res.data?.Result?.InfoAlert?.Message || "Scan saved",
     record: res.data?.Result?.ResultData?.UserDefinedScreenService
+  };
+}
+
+export async function updateWorkOrderStatusService(
+  { workOrderId, orgCode, status },
+  context
+) {
+  if (!workOrderId || !orgCode || !status) {
+    throw new Error("workOrderId, orgCode and status are required");
+  }
+
+  const raw = `${workOrderId}#${orgCode}`;
+  const encodedId = encodeURIComponent(encodeURIComponent(raw));
+
+  const payload = {
+    STATUS: {
+      STATUSCODE: status
+    }
+  };
+
+  const res = await safeRequest(
+    eamClient.patch(
+      `/workorders/${encodedId}`,
+      payload,
+      eamRequest(context)
+    )
+  );
+
+  return {
+    success: true,
+    message:
+      res.data?.Result?.InfoAlert?.Message ||
+      "Work order updated",
+    workOrderId: res.data?.Result?.ResultData?.JOBNUM
   };
 }

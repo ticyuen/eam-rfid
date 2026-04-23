@@ -17,8 +17,8 @@ export default function Login() {
   const login = useAuthStore((state) => state.login);
   const showSnackbar = useUIStore((state) =>state.showSnackbar);
 
-  const [username, setUsername] = useState("TEST");
-  const [password, setPassword] = useState("asd");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
@@ -29,20 +29,8 @@ export default function Login() {
 
     setLoading(true);
 
-    try {
-      const isDev = import.meta.env.VITE_NODE_ENV === "development";
-      
-      const mockAuth = {
-        data: {
-          data: {
-            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0IiwiaWF0IjoxNjg1NzY2MDAwfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-            username: "admin",
-            description: "Admin"
-          }
-        }
-      };
-      
-      const res = isDev ? mockAuth : await api.post("/auth/login", {
+    try {      
+      const res = await api.post("/auth/login", {
         username,
         password,
       });

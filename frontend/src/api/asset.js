@@ -16,7 +16,6 @@ export const fetchAssetsByZone = async (zone) => {
 };
 
 export const mapAssets = (data, zone) => {
-  console.log('mapAssets: ', data);
   return data.map((a) => ({
     id: `${a.assetCode}-${zone}`,
     assetCode: a.assetCode,

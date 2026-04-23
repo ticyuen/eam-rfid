@@ -4,7 +4,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:8080
+  - url: http://localhost:5000
 
 components:
   securitySchemes:
@@ -541,6 +541,59 @@ paths:
         500:
           description: Internal server error
 
+  /api/work-order/status:
+    patch:
+      tags:
+        - Work Order
+      summary: Update work order status
+      description: Update the status of a work order in HXGN system
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: workOrderId
+          required: true
+          schema:
+            type: string
+          description: Work Order ID
+
+        - in: query
+          name: orgCode
+          required: true
+          schema:
+            type: string
+          description: Organization Code
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  example: "C"
+
+      responses:
+        200:
+          description: Work order updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderStatusResponse'
+
+        400:
+          description: Bad request (missing parameters)
+
+        401:
+          description: Unauthorized
+
+        500:
+          description: Internal server error
+
   /api/work-order-scan/{workOrderScanUuid}/zone/{zoneCode}/save-result:
     post:
       tags:
@@ -627,8 +680,6 @@ paths:
       tags:
         - Work Order Scan
       summary: Get work order scan status
-      description: |
-        Fetch scan status details for a specific work order ID using HXGN Grid 0U5003.
       security:
         - bearerAuth: []
       parameters:

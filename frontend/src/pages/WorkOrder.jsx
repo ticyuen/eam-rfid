@@ -89,7 +89,7 @@ const WorkOrder = () => {
       case WorkOrderStatus.SECOND_SCAN_COMPLETED:
         return "View Summary";
 
-      case WorkOrderStatus.JOB_DONE:
+      case WorkOrderStatus.COMPLETED:
         return "Completed";
 
       default:
@@ -114,7 +114,7 @@ const WorkOrder = () => {
   };
 
   const getCardColor = (status) => {
-    if (status === WorkOrderStatus.JOB_DONE) return "#d6fdd9";
+    if (status === WorkOrderStatus.COMPLETED) return "#e9ffeb";
     if (status === WorkOrderStatus.RELEASED) return "white";
     return "#fff8e1";
   };
@@ -206,7 +206,7 @@ const WorkOrder = () => {
                 <Divider sx={{ mt: 2 }} />
 
                 {/* ACTION BUTTON */}
-                {wo.status !== WorkOrderStatus.JOB_DONE && (
+                {wo.status !== WorkOrderStatus.COMPLETED && (
                   <Button
                     fullWidth
                     variant="contained"

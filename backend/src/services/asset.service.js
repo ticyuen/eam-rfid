@@ -4,6 +4,7 @@ import { eamRequest } from "../lib/eamRequest.js";
 
 import { executeGrid, createFilter, mapGridRecords } from "./grid.service.js";
 import { HXGN_STATUS } from "../constants/hxgnStatus.js";
+import { ENV } from "../config/env.js";
 
 function transformAsset(data) {
   const asset = data?.Result?.ResultData?.AssetEquipment;
@@ -95,9 +96,9 @@ export async function getAssetsByLocationService({ primarySystem }, context) {
     GRID_TYPE: { TYPE: "LIST" },
     GRID: {
       CURRENT_TAB_NAME: "LST",
-      GRID_ID: "100023",
-      GRID_NAME: "0U5001",
-      USER_FUNCTION_NAME: "0U5001",
+      GRID_ID: ENV.GRID_ASSET_DETAILS_ID,
+      GRID_NAME: ENV.GRID_ASSET_DETAILS_NAME,
+      USER_FUNCTION_NAME: ENV.GRID_ASSET_DETAILS_NAME,
       NUMBER_OF_ROWS_FIRST_RETURNED: 100
     },
     MULTIADDON_FILTERS: {
@@ -170,9 +171,9 @@ export async function searchAssetsService(filtersInput, context) {
   }
 
   const raw = await executeGrid({
-    gridId: "100023",
-    gridName: "0U5001",
-    userFunctionName: "0U5001",
+    gridId: ENV.GRID_ASSET_DETAILS_ID,
+    gridName: ENV.GRID_ASSET_DETAILS_NAME,
+    userFunctionName: ENV.GRID_ASSET_DETAILS_NAME,
     filters
   }, context);
 
@@ -224,9 +225,9 @@ export async function scanAssetsByRFIDService(input, context) {
       const filters = buildRFIDFilters(chunk);
 
       const raw = await executeGrid({
-        gridId: "100023",
-        gridName: "0U5001",
-        userFunctionName: "0U5001",
+        gridId: ENV.GRID_ASSET_DETAILS_ID,
+        gridName: ENV.GRID_ASSET_DETAILS_NAME,
+        userFunctionName: ENV.GRID_ASSET_DETAILS_NAME,
         filters
       }, context);
 
@@ -273,9 +274,9 @@ export async function scanAssetsByRFIDService(input, context) {
 
 export async function getAssetMetadataService(context) {
   const raw = await executeGrid({
-    gridId: "100025",
-    gridName: "0U6001",
-    userFunctionName: "0U6001",
+    gridId: ENV.GRID_ASSET_METADATA_ID,
+    gridName: ENV.GRID_ASSET_METADATA_NAME,
+    userFunctionName: ENV.GRID_ASSET_METADATA_NAME,
     rowLimit: 100
   }, context);
 
