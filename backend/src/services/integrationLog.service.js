@@ -73,7 +73,7 @@ export async function sendIntegrationLog(log) {
   } catch (err) {
     // DO NOT throw (logging must not break main flow)
     logger.error(`Send Integration Log Failed for Batch (${log.batch}): `, {
-      message: err.message
+      message: err.response?.data?.ErrorAlert?.[0]?.Message || err.message
     });
   }
 }
