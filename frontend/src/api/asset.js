@@ -21,6 +21,7 @@ export const mapAssets = (data, zone) => {
     assetCode: a.assetCode,
     description: a.description,
     zone: a.zone,
+    zoneDescription: a.zoneDescription,
     organization: a.organizationDescription,
     location: a.location,
     department: a.department,

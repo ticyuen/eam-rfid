@@ -284,8 +284,9 @@ export async function getAssetMetadataService(context) {
 
   return records.map(fields => ({
     location: fields.loc_desc,
-    zone: fields.obj_primarysystem,
-    id: fields.id
+    zone: fields.obj_code,
+    id: fields.id,
+    zoneDescription: fields.obj_desc
   }));
 }
 
