@@ -55,7 +55,7 @@ function buildPayload(log) {
         field("RESBODY", text(JSON.stringify(log.responseBody))),
         field("PROCESSEDBODY", text("")),
         field("ERRORCODE", text(
-          log.errorCode && log.errorCode > 200 ? String(log.errorCode) : ""
+          String(log.errorCode) !== "200" ? String(log.errorCode) : ""
         ))
       ]
     }
