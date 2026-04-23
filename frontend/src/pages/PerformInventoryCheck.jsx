@@ -50,7 +50,7 @@ const getIconColor = (status) => {
     default:
       return "primary";
   }
-}
+};
 
 const getStatusMeta = (status) => {
   switch (status) {
@@ -655,13 +655,22 @@ const PerformInventoryCheck = () => {
 
               {/* RIGHT ACTION */}
               {asset.assetCode === undefined ? (
+                // TO DO: Enable this when the update RFID Code bug resolved by HxGN
+                // <IconButton
+                //   onClick={() => {
+                //     setPendingRFID(asset.rfidCode);
+                //     setOpenNewAsset(true);
+                //   }}
+                // >
+                //   <AddIcon color={getIconColor(asset.scanStatus)} />
+                // </IconButton>
                 <IconButton
                   onClick={() => {
-                    setPendingRFID(asset.rfidCode);
-                    setOpenNewAsset(true);
+                    setSelectedAsset(asset);
+                    setOpenAssetModal(true);
                   }}
                 >
-                  <AddIcon color={getIconColor(asset.scanStatus)} />
+                  <SearchIcon color={getIconColor(asset.scanStatus)} />
                 </IconButton>
               ) : (
                 <IconButton

@@ -37,6 +37,19 @@ import { fetchWorkOrderScanAssets, saveWorkOrderScanResult } from "../api/workOr
 import { createWorkOrderScan } from "../api/workOrder";
 import { getDeviceName } from "../utils/device";
 
+const getIconColor = (status) => {
+  switch (status) {
+    case ASSET_SCAN_STATUS.MATCHED:
+      return "success";
+    case ASSET_SCAN_STATUS.MISSING:
+      return "warning";
+    case ASSET_SCAN_STATUS.NEW:
+      return "error";
+    default:
+      return "primary";
+  }
+};
+
 const InventorySummary = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -584,7 +597,7 @@ const InventorySummary = () => {
 
                   {/* ASSET CODE */}
                   <Box display="flex" alignItems="center" gap={1}>
-                    <TagIcon fontSize="small" color="action" />
+                    <TagIcon fontSize="small" color={getIconColor(asset.scanStatus)} />
                     <Typography fontWeight="bold" fontSize={16}>
                       {asset.assetCode || "NEW ASSET"}
                     </Typography>
@@ -592,7 +605,7 @@ const InventorySummary = () => {
   
                   {/* DESCRIPTION */}
                   <Box display="flex" alignItems="center" gap={1} sx={{ mt: 1 }}>
-                    <DescriptionIcon fontSize="small" color="action" />
+                    <DescriptionIcon fontSize="small" color={getIconColor(asset.scanStatus)} />
                     <Typography variant="caption" color="text.secondary">
                       {(asset.assetCode) ? asset.description : asset.rfidCode}
                     </Typography>
@@ -601,7 +614,7 @@ const InventorySummary = () => {
                   {/* ZONE CONDITIONS */}
                   {(asset.scanStatus === ASSET_SCAN_STATUS.MATCHED && asset.assetCode !== "") && (
                     <Box display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
-                      <LocationOnIcon fontSize="small" color="action" />
+                      <LocationOnIcon fontSize="small" color={getIconColor(asset.scanStatus)} />
                       <Typography variant="caption">
                         {asset.zoneCode === "" ? "-" : asset.zoneCode}
                       </Typography>
@@ -611,14 +624,14 @@ const InventorySummary = () => {
                   {asset.zoneCode !== asset.currentZoneCode && asset.assetCode !== "" && asset.scanStatus !== ASSET_SCAN_STATUS.MATCHED && (
                     <Box>
                       <Box display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
-                        <LocationOnIcon fontSize="small" color="action" />
+                        <LocationOnIcon fontSize="small" color={getIconColor(asset.scanStatus)} />
                         <Typography variant="caption" fontWeight="bold">
                           Original Zone: {asset.zoneCode}
                         </Typography>
                       </Box>
                       <Box display="flex" alignItems="center" gap={1} sx={{ mt: 0.5 }}>
-                        <LocationOnIcon fontSize="small" color="error" />
-                        <Typography variant="caption" color="error" fontWeight="bold">
+                        <LocationOnIcon fontSize="small" color={getIconColor(asset.scanStatus)} />
+                        <Typography variant="caption" color={getIconColor(asset.scanStatus)} fontWeight="bold">
                           Current Zone: {asset.currentZoneCode}
                         </Typography>
                       </Box>
@@ -673,7 +686,7 @@ const InventorySummary = () => {
                   setSelectedAsset(asset);
                   setOpenModal(true);
                 }}>
-                  <SearchIcon />
+                  <SearchIcon color={getIconColor(asset.scanStatus)} />
                 </IconButton>
               </CardContent>
             </Card>

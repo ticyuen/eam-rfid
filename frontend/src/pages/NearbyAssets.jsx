@@ -96,7 +96,7 @@ export default function NearbyAssets() {
             id: `new-${code}`,
             rfidCode: code,
             assetCode: "NEW ASSET",
-            description: code,
+            description: "-",
             zone: "-",
             scanStatus: ASSET_SCAN_STATUS.NEW,
             isNew: true
@@ -211,16 +211,18 @@ export default function NearbyAssets() {
                 <Box display="flex" alignItems="center" gap={1} sx={{ mt: 1 }}>
                   <DescriptionIcon fontSize="small" sx={{ color: getStatusMeta(asset.scanStatus).color }} />
                   <Typography variant="body2" color="text.secondary">
-                    {asset.description || "-"}
+                    {asset.description === "-" ? asset.rfidCode : asset.description}
                   </Typography>
                 </Box>
 
-                <Box display="flex" alignItems="center" gap={1} sx={{ mt: 1 }}>
-                  <LocationOnIcon fontSize="small" sx={{ color: getStatusMeta(asset.scanStatus).color }} />
-                  <Typography variant="caption">
-                    {asset.zone || "-"}
-                  </Typography>
-                </Box>
+                {(asset.scanStatus !== ASSET_SCAN_STATUS.NEW) && (
+                  <Box display="flex" alignItems="center" gap={1} sx={{ mt: 1 }}>
+                    <LocationOnIcon fontSize="small" sx={{ color: getStatusMeta(asset.scanStatus).color }} />
+                    <Typography variant="caption">
+                      {asset.zone || "-"}
+                    </Typography>
+                  </Box>
+                )}
 
                 {/* STATUS CHIP */}
                 {isNewAsset(asset) && (
@@ -243,13 +245,16 @@ export default function NearbyAssets() {
 
               {/* RIGHT */}
               {isNewAsset(asset) ? (
-                <IconButton 
-                  onClick={() => {
-                    setPendingRFID(asset.rfidCode);
-                    setOpenNewAsset(true);
-                  }}
-                >
-                  <AddIcon color="error" />
+                // TO DO: Enable this when the update RFID code bug resolved by HxGN
+                // <IconButton 
+                //   onClick={() => {
+                //     setPendingRFID(asset.rfidCode);
+                //     setOpenNewAsset(true);
+                //   }}
+                // >
+                //   <AddIcon color="error" />
+                <IconButton onClick={() => handleInspect(asset)}>
+                  <SearchIcon color="error" />
                 </IconButton>
               ) : (
                 <IconButton onClick={() => handleInspect(asset)}>
