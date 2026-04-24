@@ -31,6 +31,7 @@ app.use("/api", (req, res, next) => {
 });
 
 // Swagger
+app.use("/swagger", express.static("src/docs/swagger-assets"));
 app.use("/swagger", ...swaggerSetup);
 
 // Routes

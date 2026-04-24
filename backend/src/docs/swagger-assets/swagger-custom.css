@@ -1,0 +1,123 @@
+/* ===== GLOBAL ===== */
+.swagger-ui {
+  font-family: "Inter", sans-serif;
+  background: #e2efff;
+}
+
+/* ===== REMOVE TOP BAR ===== */
+.swagger-ui .topbar {
+  display: none;
+}
+
+/* ===== CUSTOM HEADER SPACE ===== */
+body {
+  margin: 0;
+}
+
+.swagger-ui .scheme-container {
+  background: #e2efff;
+}
+
+/* ===== TAG (ENDPOINT GROUP) ===== */
+.swagger-ui .opblock-tag {
+  color: #004b8f;
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 2px solid #9bb9dd;
+  padding-bottom: 5px;
+}
+
+/* ===== ENDPOINT CARD ===== */
+.swagger-ui .opblock {
+  border-radius: 10px;
+  border: 1px solid #d6e2f0;
+  box-shadow: 0 2px 6px rgba(0, 75, 143, 0.08);
+  margin-bottom: 12px;
+}
+
+/* ===== METHOD COLORS ===== */
+.swagger-ui .opblock.opblock-get {
+  border-left: 5px solid #377fb1;
+}
+
+.swagger-ui .opblock.opblock-post {
+  border-left: 5px solid #004b8f;
+}
+
+.swagger-ui .opblock.opblock-patch {
+  border-left: 5px solid #9bb9dd;
+}
+
+/* ===== BUTTONS ===== */
+.swagger-ui .btn.execute {
+  background-color: #004b8f;
+  border-color: #004b8f;
+  color: #fff;
+}
+
+.swagger-ui .btn.execute:hover {
+  background-color: #00376a;
+}
+
+/* ===== TRY IT OUT BUTTON ===== */
+.swagger-ui .try-out__btn {
+  border-color: #377fb1;
+  color: #377fb1;
+}
+
+/* ===== INPUT FIELDS ===== */
+.swagger-ui input,
+.swagger-ui textarea {
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+/* ===== RESPONSE BOX ===== */
+.swagger-ui .responses-inner {
+  background: #f1f6fb;
+  border-radius: 8px;
+}
+
+/* ===== TABLE HEADERS ===== */
+.swagger-ui table thead tr th {
+  color: #004b8f;
+}
+
+/* ===== SCHEMA BOX ===== */
+.swagger-ui .model-box {
+  background: #f8fbff;
+}
+
+/* ===== AUTH BOX ===== */
+.swagger-ui .auth-wrapper {
+  border-radius: 10px;
+}
+
+/* ===== HIDE UNWANTED ===== */
+.swagger-ui .models {
+  display: none; /* hide schemas section */
+}
+
+.swagger-ui .opblock .opblock-section-header {
+    background-color: #e2efff;
+}
+
+.swagger-ui .responses-inner {
+    background-color: #e7f2ff;
+}
+
+.swagger-ui input {
+    background-color: #f7fbff !important;
+}
+
+.swagger-ui input[disabled] {
+    background-color: #f3f3f3 !important;
+}
+
+.swagger-ui textarea {
+    background-color: #edf5ff !important;
+}
+
+.information-container {
+    display: none;
+}

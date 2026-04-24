@@ -7,7 +7,9 @@ const swaggerDoc = YAML.load(path.resolve("src/docs/swagger.yaml"));
 export const swaggerSetup = [
   swaggerUi.serve,
   swaggerUi.setup(swaggerDoc, {
-  customSiteTitle: "EAM RFID API",
+    customSiteTitle: "EAM RFID API",
+    customCssUrl: "/swagger/swagger-custom.css",
+    customJs: "/swagger/swagger-custom.js",
     swaggerOptions: {
       persistAuthorization: true,
       displayRequestDuration: true
