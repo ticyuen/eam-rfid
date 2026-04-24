@@ -50,10 +50,7 @@ const getGridEnv = () => {
     default:
       throw new ApiError(500, `Invalid Grid Environment (${process.env.EAM_TENANT})`)
   }
-}
-
-const gridEnv = getGridEnv() || {};
-console.log(`EAM Tenant: ${process.env.EAM_TENANT}, GRID_USER_INFO_ID: ${gridEnv.GRID_USER_INFO_ID}`)
+};
 
 export const ENV = {
   PORT: process.env.PORT || 5000,
@@ -63,7 +60,7 @@ export const ENV = {
   JWT_SECRET: process.env.JWT_SECRET || "burn1million",
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN,
 
-  EAM_BASE_URL: (process.env.DEV_ENV === "HOME") ? process.env.EAM_BASE_URL_VPN : process.env.EAM_BASE_URL,
+  EAM_BASE_URL: (process.env.NODE_ENV === "PRODUCTION") ? process.env.EAM_BASE_URL : process.env.EAM_BASE_URL_VPN,
   EAM_TENANT: process.env.EAM_TENANT,
   EAM_ORG: process.env.EAM_ORG,
   EAM_USERNAME: process.env.EAM_USERNAME,
@@ -74,21 +71,21 @@ export const ENV = {
 
   TZ: process.env.TZ,
   
-  GRID_USER_INFO_ID: gridEnv.GRID_USER_INFO_ID,
-  GRID_USER_INFO_NAME: gridEnv.GRID_USER_INFO_NAME,
+  GRID_USER_INFO_ID: getGridEnv().GRID_USER_INFO_ID,
+  GRID_USER_INFO_NAME: getGridEnv().GRID_USER_INFO_NAME,
   
-  GRID_ASSET_DETAILS_ID: gridEnv.GRID_ASSET_DETAILS_ID,
-  GRID_ASSET_DETAILS_NAME: gridEnv.GRID_ASSET_DETAILS_NAME,
+  GRID_ASSET_DETAILS_ID: getGridEnv().GRID_ASSET_DETAILS_ID,
+  GRID_ASSET_DETAILS_NAME: getGridEnv().GRID_ASSET_DETAILS_NAME,
   
-  GRID_ASSET_METADATA_ID : gridEnv.GRID_ASSET_METADATA_ID,
-  GRID_ASSET_METADATA_NAME: gridEnv.GRID_ASSET_METADATA_NAME,
+  GRID_ASSET_METADATA_ID : getGridEnv().GRID_ASSET_METADATA_ID,
+  GRID_ASSET_METADATA_NAME: getGridEnv().GRID_ASSET_METADATA_NAME,
   
-  GRID_LATEST_WOSC_ID: gridEnv.GRID_LATEST_WOSC_ID,
-  GRID_LATEST_WOSC_NAME: gridEnv.GRID_LATEST_WOSC_NAME,
+  GRID_LATEST_WOSC_ID: getGridEnv().GRID_LATEST_WOSC_ID,
+  GRID_LATEST_WOSC_NAME: getGridEnv().GRID_LATEST_WOSC_NAME,
   
-  GRID_WO_DETAILS_ID: gridEnv.GRID_WO_DETAILS_ID,
-  GRID_WO_DETAILS_NAME: gridEnv.GRID_WO_DETAILS_NAME,
+  GRID_WO_DETAILS_ID: getGridEnv().GRID_WO_DETAILS_ID,
+  GRID_WO_DETAILS_NAME: getGridEnv().GRID_WO_DETAILS_NAME,
   
-  GRID_ASSET_SCAN_ID: gridEnv.GRID_ASSET_SCAN_ID,
-  GRID_ASSET_SCAN_NAME: gridEnv.GRID_ASSET_SCAN_NAME,
+  GRID_ASSET_SCAN_ID: getGridEnv().GRID_ASSET_SCAN_ID,
+  GRID_ASSET_SCAN_NAME: getGridEnv().GRID_ASSET_SCAN_NAME,
 };

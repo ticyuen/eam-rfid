@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 
 const logDir = path.resolve("logs");
-const auditDir = path.join(logDir, ".audit"); // hidden folder
+const auditDir = path.join(logDir, ".audit");
 
 // Ensure directories exist
 if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });

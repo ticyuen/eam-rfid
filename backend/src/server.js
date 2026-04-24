@@ -1,8 +1,8 @@
 import app from "./app.js";
 import { ENV } from "./config/env.js";
+import logger from "./config/logger.js";
 
-const PORT = ENV.PORT;
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(ENV.PORT, "0.0.0.0", () => {
+  logger.info(`Server running on port ${ENV.PORT}`);
+  logger.info(`EAM Tenant: ${ENV.EAM_TENANT}`);
 });

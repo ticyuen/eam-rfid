@@ -3,9 +3,6 @@ info:
   title: EAM Backend API
   version: 1.0.0
 
-servers:
-  - url: http://localhost:5000
-
 components:
   securitySchemes:
     bearerAuth:
